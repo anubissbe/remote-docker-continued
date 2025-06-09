@@ -1,0 +1,109 @@
+# Repository settings for anubissbe/remote-docker
+# This file can be used with the Settings GitHub App to configure repository settings
+
+repository:
+  name: remote-docker
+  description: "A Docker Desktop extension for managing and monitoring remote Docker environments via SSH tunneling"
+  homepage: https://hub.docker.com/r/telkombe/remote-docker
+  topics:
+    - docker
+    - docker-desktop
+    - docker-extension
+    - ssh
+    - remote
+    - container-management
+    - devops
+    - docker-compose
+  private: false
+  has_issues: true
+  has_projects: false
+  has_wiki: false
+  has_downloads: true
+  default_branch: main
+  
+  # Repository features
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: true
+  allow_auto_merge: true
+  delete_branch_on_merge: true
+  
+  # Security and analysis
+  enable_vulnerability_alerts: true
+  enable_automated_security_fixes: true
+
+# Branch protection rules
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - "build-and-push"
+          - "test-backend"
+          - "test-frontend"
+          - "build-test"
+      enforce_admins: false
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: false
+        require_last_push_approval: false
+      restrictions: null
+      allow_force_pushes: false
+      allow_deletions: false
+
+# Collaborators
+collaborators:
+  - username: anubissbe
+    permission: admin
+
+# Labels
+labels:
+  - name: bug
+    color: "d73a4a"
+    description: "Something isn't working"
+  
+  - name: enhancement
+    color: "a2eeef"
+    description: "New feature or request"
+  
+  - name: documentation
+    color: "0075ca"
+    description: "Improvements or additions to documentation"
+  
+  - name: good first issue
+    color: "7057ff"
+    description: "Good for newcomers"
+  
+  - name: help wanted
+    color: "008672"
+    description: "Extra attention is needed"
+  
+  - name: dependencies
+    color: "0366d6"
+    description: "Pull requests that update a dependency file"
+  
+  - name: frontend
+    color: "1d76db"
+    description: "Frontend related changes"
+  
+  - name: backend
+    color: "0e8a16"
+    description: "Backend related changes"
+  
+  - name: docker
+    color: "2188ff"
+    description: "Docker related changes"
+  
+  - name: github-actions
+    color: "000000"
+    description: "GitHub Actions workflow changes"
+  
+  - name: security
+    color: "b60205"
+    description: "Security related changes"
+  
+  - name: performance
+    color: "fbca04"
+    description: "Performance improvements"
