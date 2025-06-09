@@ -5,6 +5,26 @@ All notable changes to the Remote Docker Extension will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- MCP (Model Context Protocol) Toolkit Integration
+  - New MCP Servers tab in the UI for managing MCP servers on remote hosts
+  - Pre-configured MCP server templates (Filesystem, Docker, Shell, Git, Database, Web)
+  - Backend API endpoints for MCP server lifecycle management
+  - SSH adapter for executing MCP operations on remote hosts
+  - Comprehensive type definitions for MCP entities
+  - Real-time server status monitoring
+  - Secure SSH tunneling for MCP connections
+  - Container-based isolation for each MCP server
+  - Architecture documentation for MCP integration
+
+### Changed
+- Updated README with MCP feature documentation
+- Enhanced user guide with MCP usage instructions
+- Extended API reference with MCP endpoints
+- Updated development guide with MCP component information
+
 ## [1.0.10] - 2025-06-09
 
 ### Added
