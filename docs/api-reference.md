@@ -120,6 +120,149 @@ Remove an environment configuration.
 **Parameters:**
 - `name` - Environment name
 
+### MCP Server Operations
+
+#### GET /mcp/predefined
+Get a list of pre-configured MCP server templates.
+
+**Response:**
+```json
+[
+  {
+    "id": "filesystem-basic",
+    "name": "Filesystem Access",
+    "description": "Read and write files on the remote host",
+    "type": "filesystem",
+    "icon": "folder",
+    "config": {
+      "image": "anthropic/mcp-server-filesystem:latest",
+      "env": {"MCP_MODE": "filesystem"},
+      "filesystem": {
+        "rootPath": "/home",
+        "readOnly": false
+      }
+    }
+  }
+]
+```
+
+#### POST /mcp/servers
+Create a new MCP server instance.
+
+**Query Parameters:**
+- `username` - SSH username for the remote host
+- `hostname` - Remote host address
+
+**Request Body:**
+```json
+{
+  "name": "My Filesystem Server",
+  "type": "filesystem",
+  "config": {
+    "image": "anthropic/mcp-server-filesystem:latest",
+    "env": {"MCP_MODE": "filesystem"},
+    "filesystem": {
+      "rootPath": "/home",
+      "readOnly": false
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "server": {
+    "id": "mcp-filesystem-1234567890",
+    "name": "My Filesystem Server",
+    "type": "filesystem",
+    "status": "creating",
+    "port": 9000,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "MCP server creation initiated"
+}
+```
+
+#### GET /mcp/servers
+List all MCP servers for the current environment.
+
+**Response:**
+```json
+{
+  "servers": [
+    {
+      "id": "mcp-filesystem-1234567890",
+      "name": "My Filesystem Server",
+      "type": "filesystem",
+      "status": "running",
+      "port": 9000,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### GET /mcp/servers/:id
+Get details for a specific MCP server.
+
+**Parameters:**
+- `id` - MCP server ID
+
+#### POST /mcp/servers/:id/start
+Start a stopped MCP server.
+
+**Parameters:**
+- `id` - MCP server ID
+
+**Query Parameters:**
+- `username` - SSH username
+- `hostname` - Remote host address
+
+#### POST /mcp/servers/:id/stop
+Stop a running MCP server.
+
+**Parameters:**
+- `id` - MCP server ID
+
+**Query Parameters:**
+- `username` - SSH username
+- `hostname` - Remote host address
+
+#### DELETE /mcp/servers/:id
+Delete an MCP server.
+
+**Parameters:**
+- `id` - MCP server ID
+
+**Query Parameters:**
+- `username` - SSH username
+- `hostname` - Remote host address
+
+#### GET /mcp/servers/:id/logs
+Get logs from an MCP server.
+
+**Parameters:**
+- `id` - MCP server ID
+
+**Query Parameters:**
+- `lines` - Number of log lines to return (default: 50)
+
+**Response:**
+```json
+{
+  "logs": [
+    {
+      "timestamp": "2024-01-01T00:00:00Z",
+      "level": "info",
+      "message": "MCP server started",
+      "serverId": "mcp-filesystem-1234567890"
+    }
+  ]
+}
+```
+
 ## Error Responses
 
 All endpoints return standard HTTP status codes:
