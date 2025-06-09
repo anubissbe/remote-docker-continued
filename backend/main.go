@@ -19,11 +19,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
+	"remote-docker/mcp"
 )
 
 var (
 	logger        = logrus.New()
 	tunnelManager *SSHTunnelManager
+	mcpManager    *mcp.Manager
+	sshAdapter    *mcp.SSHTunnelAdapter
 )
 
 // SSH tunnel manager that maintains persistent connections
@@ -92,6 +95,10 @@ func main() {
 
 	// Start cleanup routine for idle connections (check every minute, timeout after 30 minutes)
 	tunnelManager.StartCleanupRoutine(1*time.Minute, 10*time.Minute)
+	
+	// Initialize MCP manager with SSH adapter
+	sshAdapter = mcp.NewSSHTunnelAdapter(tunnelManager.ExecuteCommand)
+	mcpManager = mcp.NewManager(sshAdapter, logger)
 
 	logMiddleware := middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Skipper: middleware.DefaultSkipper,
@@ -149,6 +156,16 @@ func main() {
 	router.POST("/dashboard/resources", getDashboardResources)
 	router.POST("/dashboard/systeminfo", getDashboardSystemInfo)
 	router.POST("/dashboard/events", getDashboardEvents)
+	
+	// MCP endpoints
+	router.GET("/mcp/predefined", getPredefinedMCPServers)
+	router.POST("/mcp/servers", createMCPServer)
+	router.GET("/mcp/servers", listMCPServers)
+	router.GET("/mcp/servers/:id", getMCPServer)
+	router.POST("/mcp/servers/:id/start", startMCPServer)
+	router.POST("/mcp/servers/:id/stop", stopMCPServer)
+	router.DELETE("/mcp/servers/:id", deleteMCPServer)
+	router.GET("/mcp/servers/:id/logs", getMCPServerLogs)
 
 	// Graceful shutdown handling
 	c := make(chan os.Signal, 1)
@@ -1824,4 +1841,192 @@ func hello(ctx echo.Context) error {
 
 type HTTPMessageBody struct {
 	Message string
+}
+
+// MCP API Handlers
+
+// Get predefined MCP server configurations
+func getPredefinedMCPServers(ctx echo.Context) error {
+	servers := mcp.GetPredefinedServers()
+	return ctx.JSON(http.StatusOK, servers)
+}
+
+// Create a new MCP server
+func createMCPServer(ctx echo.Context) error {
+	var req mcp.MCPServerRequest
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request format"})
+	}
+	
+	// Get current environment from query params or header
+	username := ctx.QueryParam("username")
+	hostname := ctx.QueryParam("hostname")
+	
+	if username == "" || hostname == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing username or hostname"})
+	}
+	
+	// Set the current environment for SSH commands
+	sshAdapter.SetCurrentEnvironment(username, hostname)
+	
+	// Create the MCP server
+	server, err := mcpManager.CreateServer(ctx.Request().Context(), req)
+	if err != nil {
+		logger.Errorf("Failed to create MCP server: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to create MCP server: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusCreated, mcp.MCPServerResponse{
+		Server:  server,
+		Message: "MCP server creation initiated",
+	})
+}
+
+// List all MCP servers
+func listMCPServers(ctx echo.Context) error {
+	servers := mcpManager.ListServers()
+	
+	return ctx.JSON(http.StatusOK, mcp.MCPServerListResponse{
+		Servers: servers,
+		Total:   len(servers),
+	})
+}
+
+// Get a specific MCP server
+func getMCPServer(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	server, err := mcpManager.GetServer(serverID)
+	if err != nil {
+		return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+	
+	return ctx.JSON(http.StatusOK, mcp.MCPServerResponse{
+		Server: server,
+	})
+}
+
+// Start an MCP server
+func startMCPServer(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	// Get current environment
+	username := ctx.QueryParam("username")
+	hostname := ctx.QueryParam("hostname")
+	
+	if username == "" || hostname == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing username or hostname"})
+	}
+	
+	// Set the current environment for SSH commands
+	sshAdapter.SetCurrentEnvironment(username, hostname)
+	
+	if err := mcpManager.StartServer(ctx.Request().Context(), serverID); err != nil {
+		logger.Errorf("Failed to start MCP server: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to start MCP server: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, map[string]string{
+		"success": "true",
+		"message": fmt.Sprintf("MCP server %s started", serverID),
+	})
+}
+
+// Stop an MCP server
+func stopMCPServer(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	// Get current environment
+	username := ctx.QueryParam("username")
+	hostname := ctx.QueryParam("hostname")
+	
+	if username == "" || hostname == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing username or hostname"})
+	}
+	
+	// Set the current environment for SSH commands
+	sshAdapter.SetCurrentEnvironment(username, hostname)
+	
+	if err := mcpManager.StopServer(ctx.Request().Context(), serverID); err != nil {
+		logger.Errorf("Failed to stop MCP server: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to stop MCP server: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, map[string]string{
+		"success": "true",
+		"message": fmt.Sprintf("MCP server %s stopped", serverID),
+	})
+}
+
+// Delete an MCP server
+func deleteMCPServer(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	// Get current environment
+	username := ctx.QueryParam("username")
+	hostname := ctx.QueryParam("hostname")
+	
+	if username == "" || hostname == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing username or hostname"})
+	}
+	
+	// Set the current environment for SSH commands
+	sshAdapter.SetCurrentEnvironment(username, hostname)
+	
+	if err := mcpManager.DeleteServer(ctx.Request().Context(), serverID); err != nil {
+		logger.Errorf("Failed to delete MCP server: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to delete MCP server: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, map[string]string{
+		"success": "true",
+		"message": fmt.Sprintf("MCP server %s deleted", serverID),
+	})
+}
+
+// Get MCP server logs
+func getMCPServerLogs(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	// Get lines parameter
+	lines := 50
+	if linesParam := ctx.QueryParam("lines"); linesParam != "" {
+		if l, err := strconv.Atoi(linesParam); err == nil && l > 0 {
+			lines = l
+		}
+	}
+	
+	logs, err := mcpManager.GetServerLogs(serverID, lines)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to get logs: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, map[string]interface{}{
+		"logs": logs,
+	})
 }
