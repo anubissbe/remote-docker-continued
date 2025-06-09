@@ -97,6 +97,12 @@
 - Networks: view, create, delete
 - Volumes: browse, inspect, cleanup
 
+🤖 **MCP Toolkit Integration**
+- Run MCP servers on remote hosts
+- Pre-configured server templates
+- Filesystem, Docker, Shell access
+- Secure SSH tunneling for MCP
+
 🔄 **Smart Auto-refresh**
 - Configurable refresh intervals
 - Selective data updates
@@ -221,6 +227,25 @@ C:\Users\<username>\.ssh\id_rsa.pub
 - View volume details
 - Remove unused volumes
 
+### MCP Toolkit Integration
+The extension now supports running MCP (Model Context Protocol) servers on remote Docker hosts, enabling AI assistants to interact with remote systems securely.
+
+#### Available MCP Server Types
+- **Filesystem Access**: Read/write or read-only access to remote files
+- **Docker Management**: Control containers, images, and networks via MCP
+- **Shell Access**: Execute commands with configurable restrictions
+- **Git Repository**: Work with Git repositories on remote hosts
+- **Database Access**: Connect to PostgreSQL databases
+- **Web Browser**: Browse and interact with web applications
+
+#### MCP Features
+- Pre-configured server templates for quick deployment
+- One-click server creation and management
+- Secure SSH tunneling for all MCP connections
+- Real-time server status monitoring
+- Automatic port assignment and management
+- Container-based isolation for each MCP server
+
 ## Configuration
 
 ### Environment Settings
@@ -314,6 +339,7 @@ remote-docker/
 
 - [User Guide](docs/user-guide.md) - Detailed usage instructions
 - [API Reference](docs/api-reference.md) - Backend API documentation
+- [MCP Integration](docs/MCP_INTEGRATION.md) - MCP toolkit architecture and implementation
 - [Development Guide](docs/development.md) - Setup and contribution guide
 - [Docker Hub Cleanup](docs/docker-hub-cleanup.md) - Image management guide
 

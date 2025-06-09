@@ -67,6 +67,25 @@ cd backend
 go build -o ../server main.go
 ```
 
+#### MCP Integration
+
+The MCP (Model Context Protocol) integration adds several new components:
+
+- `backend/mcp/` - MCP server management logic
+  - `types.go` - Type definitions for MCP entities
+  - `manager.go` - MCP server lifecycle management
+  - `predefined.go` - Pre-configured server templates
+  - `ssh_adapter.go` - SSH integration for remote execution
+
+- `ui/src/components/MCP/` - Frontend MCP components
+  - `MCPServers.tsx` - Main MCP management interface
+  - `types.ts` - TypeScript type definitions
+
+When developing MCP features:
+1. Update server templates in `predefined.go` for new MCP server types
+2. Modify the manager for new lifecycle operations
+3. Update the UI components for new functionality
+
 ### Testing the Extension
 
 1. Build the extension:

@@ -7,7 +7,7 @@ Welcome to the Remote Docker Extension! This guide will help you get started wit
 Install the extension from Docker Desktop or using the command line:
 
 ```bash
-docker extension install egekocabas/remote-docker:latest
+docker extension install telkombe/remote-docker:latest
 ```
 
 ## Getting Started
@@ -58,6 +58,48 @@ The Networks tab provides:
 - List of all networks
 - Network details and configuration
 - Create/remove networks
+
+### MCP Toolkit Integration
+
+The MCP Servers tab allows you to run Model Context Protocol servers on remote Docker hosts, enabling AI assistants to interact with your remote systems.
+
+#### Creating an MCP Server
+
+1. Navigate to the "MCP Servers" tab
+2. Click "New Server"
+3. Choose from pre-configured templates:
+   - **Filesystem Access**: Browse and edit files on the remote host
+   - **Filesystem (Read-Only)**: Safe read-only file access
+   - **Docker Management**: Control Docker via MCP
+   - **Shell Access**: Execute bash commands
+   - **Restricted Shell**: Limited command execution for safety
+   - **Git Repository**: Work with Git repos
+   - **PostgreSQL Database**: Database access
+   - **Web Browser**: Web interaction capabilities
+4. Optionally customize the server name
+5. Click "Create" to deploy the server
+
+#### Managing MCP Servers
+
+- **Start/Stop**: Use the play/stop buttons to control server state
+- **Delete**: Remove servers when no longer needed (must be stopped first)
+- **Status Monitoring**: View real-time server status
+- **Port Information**: Each server gets a unique port for connections
+
+#### Using MCP Servers
+
+Once an MCP server is running:
+1. Note the assigned port number
+2. Configure your AI assistant to connect via SSH tunnel
+3. The MCP server will be accessible at `localhost:[port]` through the tunnel
+
+#### Security Considerations
+
+- All MCP connections are tunneled through SSH
+- Each server runs in an isolated Docker container
+- Filesystem access can be restricted to specific directories
+- Shell commands can be whitelisted or blacklisted
+- No direct port exposure to the internet
 
 ## Features
 
