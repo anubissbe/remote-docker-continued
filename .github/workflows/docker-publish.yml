@@ -96,7 +96,7 @@ jobs:
         with:
           subject-name: ${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
+          push-to-registry: false
 
       - name: Generate build attestation for GHCR
         if: github.event_name != 'pull_request'
@@ -104,7 +104,7 @@ jobs:
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
+          push-to-registry: false
 
       - name: Update Docker Hub description
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
