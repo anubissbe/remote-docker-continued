@@ -141,8 +141,15 @@ export function App() {
   const loadSettings = async () => {
     setIsLoading(true);
     try {
+      // Add detailed debugging
+      console.log('Starting loadSettings...');
+      console.log('ddClient:', ddClient);
+      console.log('ddClient.extension:', ddClient.extension);
+      console.log('ddClient.extension?.vm:', ddClient.extension?.vm);
+      console.log('ddClient.extension?.vm?.service:', ddClient.extension?.vm?.service);
+      
       if (!ddClient.extension?.vm?.service) {
-        throw new Error('Docker Desktop service not available');
+        throw new Error('Docker Desktop service not available - Extension API not initialized properly');
       }
 
       const response = await ddClient.extension.vm.service.get('/settings');
@@ -170,7 +177,10 @@ export function App() {
     } catch (err: any) {
       console.error('Failed to load settings:', err);
       setError('Failed to load settings: ' + (err.message || 'Unknown error'));
-      ddClient.desktopUI.toast.error('Failed to load settings: ' + (err.message || 'Unknown error'));
+      // Only show toast if ddClient.desktopUI is available
+      if (ddClient.desktopUI?.toast) {
+        ddClient.desktopUI.toast.error('Failed to load settings: ' + (err.message || 'Unknown error'));
+      }
       // Initialize with empty settings if loading fails
       setSettings({
         environments: []
@@ -418,6 +428,32 @@ export function App() {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', p: 3 }}>
+        <Alert severity="error" sx={{ maxWidth: 600 }}>
+          <Typography variant="h6" gutterBottom>
+            Extension initialization failed
+          </Typography>
+          <Typography variant="body2" paragraph>
+            {error}
+          </Typography>
+          <Typography variant="body2" paragraph>
+            Please check:
+          </Typography>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            <li>Docker Desktop is running</li>
+            <li>The extension is properly installed</li>
+            <li>Try reinstalling the extension</li>
+          </ul>
+          <Button onClick={() => window.location.reload()} sx={{ mt: 2 }}>
+            Reload
+          </Button>
+        </Alert>
       </Box>
     );
   }
