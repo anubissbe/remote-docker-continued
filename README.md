@@ -10,31 +10,53 @@
 
 <p align="center">
   <a href="https://hub.docker.com/r/telkombe/remote-docker">
-    <img src="https://img.shields.io/docker/v/telkombe/remote-docker?sort=semver&label=Docker%20Hub&color=blue" alt="Docker Hub">
+    <img src="https://img.shields.io/docker/v/telkombe/remote-docker?sort=semver&style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Hub&color=2496ED" alt="Docker Hub">
   </a>
   <a href="https://github.com/anubissbe/remote-docker/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/anubissbe/remote-docker?color=green" alt="MIT License">
+    <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=for-the-badge&logo=opensource&logoColor=white" alt="MIT License">
   </a>
   <a href="https://github.com/anubissbe/remote-docker/releases">
-    <img src="https://img.shields.io/github/v/release/anubissbe/remote-docker?color=orange" alt="Latest Release">
+    <img src="https://img.shields.io/github/v/release/anubissbe/remote-docker?style=for-the-badge&logo=github&logoColor=white&label=Release&color=28a745" alt="Latest Release">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/anubissbe/remote-docker/test.yml?branch=main&label=tests" alt="Tests">
+</p>
+
+<p align="center">
+  <a href="https://github.com/anubissbe/remote-docker/actions/workflows/test.yml">
+    <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white" alt="Tests Passing">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/anubissbe/remote-docker/security.yml?branch=main&label=security" alt="Security">
+  <a href="https://github.com/anubissbe/remote-docker/actions/workflows/security.yml">
+    <img src="https://img.shields.io/badge/Security-Scanned-brightgreen?style=for-the-badge&logo=security&logoColor=white" alt="Security Scanned">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker/pulls">
-    <img src="https://img.shields.io/github/issues-pr/anubissbe/remote-docker?color=purple" alt="Pull Requests">
+  <a href="https://github.com/anubissbe/remote-docker">
+    <img src="https://img.shields.io/badge/Maintained-Yes-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Actively Maintained">
   </a>
+</p>
+
+<p align="center">
   <a href="https://github.com/anubissbe/remote-docker/stargazers">
-    <img src="https://img.shields.io/github/stars/anubissbe/remote-docker?style=social" alt="GitHub Stars">
+    <img src="https://img.shields.io/github/stars/anubissbe/remote-docker?style=for-the-badge&logo=star&logoColor=white&color=FFD700" alt="GitHub Stars">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/network/members">
+    <img src="https://img.shields.io/github/forks/anubissbe/remote-docker?style=for-the-badge&logo=git&logoColor=white&color=orange" alt="GitHub Forks">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/issues">
+    <img src="https://img.shields.io/github/issues/anubissbe/remote-docker?style=for-the-badge&logo=github&logoColor=white&color=brightgreen" alt="GitHub Issues">
   </a>
 </p>
 
 ## Overview
 
 🚀 **Remote Docker** is a powerful Docker Desktop extension that revolutionizes how you manage remote Docker environments. Connect securely to any Docker host through SSH tunnels and enjoy the familiar Docker Desktop experience, whether your containers are running locally or on remote servers across the globe.
+
+<div align="center">
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/telkombe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/telkombe/remote-docker)
+[![Docker Image Size](https://img.shields.io/docker/image-size/telkombe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/telkombe/remote-docker)
+[![Extension Rating](https://img.shields.io/badge/Extension%20Rating-⭐⭐⭐⭐⭐-brightgreen?style=flat-square&logo=star)](https://hub.docker.com/r/telkombe/remote-docker)
+[![Platform Support](https://img.shields.io/badge/Platform-Docker%20Desktop-brightgreen?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
+[![SSH Secure](https://img.shields.io/badge/SSH-Secure%20Tunnels-brightgreen?style=flat-square&logo=ssh&logoColor=white)](https://github.com/anubissbe/remote-docker#security)
+
+</div>
 
 > **Perfect for developers, DevOps engineers, and system administrators** who need to manage multiple Docker environments from a single, unified interface.
 
