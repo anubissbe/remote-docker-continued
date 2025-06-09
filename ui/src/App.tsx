@@ -31,6 +31,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import NetworkCheckIcon from '@mui/icons-material/NetworkCheck';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import CloudIcon from '@mui/icons-material/Cloud';
 
 // Import pages
 import Dashboard from './pages/Dashboard';
@@ -39,6 +40,7 @@ import Images from './pages/docker/Images';
 import Volumes from './pages/docker/Volumes';
 import Networks from './pages/docker/Networks';
 import Environments from './pages/settings/Environments';
+import MCPServers from './components/MCP/MCPServers';
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 const client = createDockerDesktopClient();
@@ -69,6 +71,7 @@ type PageKey =
   | 'images'
   | 'volumes'
   | 'networks'
+  | 'mcp'
   | 'environments';
 
 interface NavItem {
@@ -107,6 +110,7 @@ export function App() {
     { key: 'images', label: 'Images', icon: <PhotoLibraryIcon />, category: 'docker' },
     { key: 'volumes', label: 'Volumes', icon: <StorageIcon />, category: 'docker' },
     { key: 'networks', label: 'Networks', icon: <NetworkCheckIcon />, category: 'docker' },
+    { key: 'mcp', label: 'MCP Servers', icon: <CloudIcon />, category: 'docker' },
     { key: 'environments', label: 'Environments', icon: <SettingsIcon />, category: 'settings' }
   ];
 
@@ -472,6 +476,12 @@ export function App() {
           <Networks
             activeEnvironment={activeEnvironment}
             settings={settings}
+          />
+        );
+      case 'mcp':
+        return (
+          <MCPServers
+            currentEnv={activeEnvironment}
           />
         );
       default:
