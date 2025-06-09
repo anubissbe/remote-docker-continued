@@ -10,29 +10,84 @@
 
 <p align="center">
   <a href="https://hub.docker.com/r/telkombe/remote-docker">
-    <img src="https://img.shields.io/docker/v/telkombe/remote-docker?sort=semver&label=Docker%20Hub" alt="Docker Hub">
+    <img src="https://img.shields.io/docker/v/telkombe/remote-docker?sort=semver&label=Docker%20Hub&color=blue" alt="Docker Hub">
   </a>
-  <a href="https://github.com/telkombe/remote-docker/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/telkombe/remote-docker" alt="License">
+  <a href="https://github.com/anubissbe/remote-docker/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/anubissbe/remote-docker?color=green" alt="MIT License">
   </a>
-  <a href="https://github.com/telkombe/remote-docker/releases">
-    <img src="https://img.shields.io/github/v/release/telkombe/remote-docker" alt="Release">
+  <a href="https://github.com/anubissbe/remote-docker/releases">
+    <img src="https://img.shields.io/github/v/release/anubissbe/remote-docker?color=orange" alt="Latest Release">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/anubissbe/remote-docker/test.yml?branch=main&label=tests" alt="Tests">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/anubissbe/remote-docker/security.yml?branch=main&label=security" alt="Security">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/pulls">
+    <img src="https://img.shields.io/github/issues-pr/anubissbe/remote-docker?color=purple" alt="Pull Requests">
+  </a>
+  <a href="https://github.com/anubissbe/remote-docker/stargazers">
+    <img src="https://img.shields.io/github/stars/anubissbe/remote-docker?style=social" alt="GitHub Stars">
   </a>
 </p>
 
 ## Overview
 
-Remote Docker is a Docker Desktop extension that enables you to connect to and manage remote Docker hosts through SSH tunnels. It provides a seamless experience for managing containers, images, volumes, and networks on remote Docker installations directly from your Docker Desktop interface.
+🚀 **Remote Docker** is a powerful Docker Desktop extension that revolutionizes how you manage remote Docker environments. Connect securely to any Docker host through SSH tunnels and enjoy the familiar Docker Desktop experience, whether your containers are running locally or on remote servers across the globe.
 
-### Key Features
+> **Perfect for developers, DevOps engineers, and system administrators** who need to manage multiple Docker environments from a single, unified interface.
 
-- 🔐 **Secure SSH Connections** - Connect to remote Docker hosts using SSH key authentication
-- 🖥️ **Multi-Environment Support** - Manage multiple remote Docker environments
-- 📊 **Real-time Dashboard** - Monitor system resources, container statistics, and Docker events
-- 🐳 **Full Docker Management** - Manage containers, images, volumes, and networks
-- 📋 **Container Logs** - View real-time logs with syntax highlighting and filtering
-- 🔄 **Auto-refresh** - Keep data up-to-date with configurable auto-refresh intervals
-- 🎨 **Dark Mode Support** - Seamless integration with Docker Desktop's theme
+**Why Remote Docker?**
+- 🌐 **Bridge the gap** between local development and remote production environments
+- 🔒 **Enterprise-grade security** with SSH key authentication
+- ⚡ **Real-time monitoring** of remote Docker resources and performance
+- 🎯 **Zero configuration** - works with any Docker host that supports SSH
+- 📱 **Seamless integration** with Docker Desktop's native UI and workflows
+
+### ✨ Key Features
+
+<table>
+<tr>
+<td width="50%">
+
+🔐 **Secure SSH Connections**
+- SSH key-based authentication only
+- No passwords or tokens stored
+- Encrypted tunnel for all communication
+
+🖥️ **Multi-Environment Support**
+- Manage unlimited remote environments
+- Quick environment switching
+- Persistent configuration storage
+
+📊 **Real-time Dashboard**
+- Live system resource monitoring
+- Container statistics and metrics
+- Docker events streaming
+
+</td>
+<td width="50%">
+
+🐳 **Complete Docker Management**
+- Containers: start, stop, restart, logs
+- Images: list, inspect, remove
+- Networks: view, create, delete
+- Volumes: browse, inspect, cleanup
+
+🔄 **Smart Auto-refresh**
+- Configurable refresh intervals
+- Selective data updates
+- Visual refresh indicators
+
+🎨 **Professional UI**
+- Native Docker Desktop integration
+- Dark/light theme support
+- Responsive design for all screen sizes
+
+</td>
+</tr>
+</table>
 
 ## Installation
 
@@ -46,7 +101,7 @@ docker extension install telkombe/remote-docker:latest
 
 ```bash
 # Clone the repository
-git clone https://github.com/telkombe/remote-docker.git
+git clone https://github.com/anubissbe/remote-docker.git
 cd remote-docker
 
 # Build and install locally
@@ -244,10 +299,6 @@ remote-docker/
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 
 - Built with [Docker Extension SDK](https://docs.docker.com/desktop/extensions-sdk/)
@@ -257,10 +308,54 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/telkombe/remote-docker/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/telkombe/remote-docker/discussions)
+- **Issues**: [GitHub Issues](https://github.com/anubissbe/remote-docker/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/anubissbe/remote-docker/discussions)
 - **Docker Hub**: [telkombe/remote-docker](https://hub.docker.com/r/telkombe/remote-docker)
+- **Repository**: [anubissbe/remote-docker](https://github.com/anubissbe/remote-docker)
 
-## Disclaimer
+## 📄 License & Disclaimer
 
-> **Warning:** Use this extension at your own risk. Always review and validate the actions performed on your remote Docker environments. This was an experimental project to explore Docker Desktop extension development and LLM-assisted coding.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+### ⚠️ Important Notice
+
+> **Use Responsibly:** This extension provides direct access to remote Docker environments. Always:
+> - Test on non-production environments first
+> - Review all actions before execution  
+> - Maintain proper backup procedures
+> - Follow your organization's security policies
+
+### 🎯 Project Genesis
+
+This project was created as an exploration of:
+- 🐳 **Docker Desktop Extension SDK** capabilities and architecture
+- 🤖 **LLM-assisted development** workflows and best practices  
+- 🔧 **Remote Docker management** patterns and security considerations
+- 🚀 **Modern web technologies** integration (React, TypeScript, Go)
+
+**Built with curiosity, enhanced by community contributions.**
+
+---
+
+## 📸 Screenshots
+
+<details>
+<summary>🖼️ Click to view extension screenshots</summary>
+
+| Dashboard | Container Management |
+|-----------|---------------------|
+| ![Dashboard](assets/01_dashboard.png) | ![Containers](assets/02_containers.png) |
+
+| Compose Logs | Image Management |
+|--------------|------------------|
+| ![Compose Logs](assets/03_compose_logs.png) | ![Images](assets/04_images.png) |
+
+| Volume Management | Network Management |
+|-------------------|-------------------|
+| ![Volumes](assets/05_volumes.png) | ![Networks](assets/06_networks.png) |
+
+| Environment Setup | Environment Selection |
+|-------------------|----------------------|
+| ![Environments](assets/07_environments.png) | ![Selection](assets/08_environment_selection.png) |
+
+</details>
