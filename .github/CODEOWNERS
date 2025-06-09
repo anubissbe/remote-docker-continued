@@ -1,4 +1,23 @@
-# The CODEOWNERS file defines individuals or teams that are
-# responsible for code this repository.
+# Code owners for Remote Docker Extension
+# These users will be automatically requested for review when PRs are opened
 
-*    @egekocabas
+# Global owners
+* @anubissbe
+
+# Backend code
+/backend/ @anubissbe
+
+# Frontend code  
+/ui/ @anubissbe
+
+# Documentation
+/docs/ @anubissbe
+*.md @anubissbe
+
+# GitHub workflows and configuration
+/.github/ @anubissbe
+
+# Docker and deployment files
+Dockerfile @anubissbe
+docker-compose.yaml @anubissbe
+/scripts/ @anubissbe
