@@ -56,3 +56,4 @@ debug/
 
 # UI test files
 ui/tests/
+remote-docker/
