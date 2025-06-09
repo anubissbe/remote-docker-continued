@@ -245,15 +245,21 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
       payload.tail = tailLines;
       payload.timestamps = true;
 
-      const response = (await ddClient.extension.vm.service.post(endpoint, payload)) as ContainerLogsResponse;
+      const response = await ddClient.extension.vm.service.post(endpoint, payload);
 
-      if (response && typeof response === 'object' && 'error' in response) {
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
         // If the response shape includes an error field
-        const errorResponse = response as ErrorResponse;
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
-      const newLines = response.logs || [];
+      const newLines = (actualResponse as ContainerLogsResponse).logs || [];
 
       if (logsType === 'container') {
         setContainerLogs((old) => {

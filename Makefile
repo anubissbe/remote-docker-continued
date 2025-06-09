@@ -1,49 +1,58 @@
-IMAGE?=egekocabas/remote-docker
-TAG?=0.1.0
+# Remote Docker Extension Makefile
 
-BUILDER=buildx-multi-arch
+.PHONY: help build push install uninstall clean dev lint test
 
-INFO_COLOR = \033[0;36m
-NO_COLOR   = \033[m
+# Default target
+help:
+	@echo "Remote Docker Extension - Make targets:"
+	@echo "  make build     - Build the Docker extension image"
+	@echo "  make push      - Push image to Docker Hub"
+	@echo "  make install   - Install extension in Docker Desktop"
+	@echo "  make uninstall - Remove extension from Docker Desktop"
+	@echo "  make dev       - Build and install for development"
+	@echo "  make clean     - Clean build artifacts"
+	@echo "  make lint      - Run linters"
+	@echo "  make test      - Run tests"
 
-build-extension: ## Build service image to be deployed as a desktop extension
-	docker build --tag=$(IMAGE):$(TAG) .
+# Build the extension
+build:
+	@echo "Building Remote Docker extension..."
+	@./scripts/build.sh
 
-build-extension-no-cache: ## Build service image to be deployed as a desktop extension without cache
-	docker build --no-cache --tag=$(IMAGE):$(TAG) .
+# Push to Docker Hub
+push:
+	@echo "Pushing to Docker Hub..."
+	@./scripts/deploy.sh
 
-uninstall-extension: ## Uninstall the extension
-	docker extension uninstall $(IMAGE):$(TAG)
+# Install extension
+install:
+	@echo "Installing extension..."
+	docker extension install telkombe/remote-docker:latest
 
-install-extension: build-extension ## Install the extension
-	docker extension install $(IMAGE):$(TAG) -f
+# Uninstall extension
+uninstall:
+	@echo "Uninstalling extension..."
+	docker extension rm telkombe/remote-docker
 
-update-extension: build-extension ## Update the extension
-	docker extension update $(IMAGE):$(TAG) -f
+# Development build and install
+dev: build
+	@echo "Installing development build..."
+	-docker extension rm telkombe/remote-docker 2>/dev/null || true
+	docker extension install telkombe/remote-docker
 
-run-client: ## Run the client
-	npm --prefix ui install && npm --prefix ui run dev
+# Clean build artifacts
+clean:
+	@echo "Cleaning build artifacts..."
+	@./scripts/clean.sh
 
-set-extension-source: ## Set Docker extension dev source
-	docker extension dev ui-source egekocabas/remote-docker:latest http://localhost:3000
+# Run linters
+lint:
+	@echo "Running linters..."
+	cd backend && go fmt ./... && go vet ./...
+	cd ui && npm run lint
 
-debug-ui: ## Debug the UI
-	docker extension dev debug egekocabas/remote-docker:latest
-
-validate-extension: ## Validate the extension
-	docker extension validate $(IMAGE):$(TAG)
-
-prepare-buildx: ## Create buildx builder for multi-arch build, if not exists
-	docker buildx inspect $(BUILDER) || docker buildx create --name=$(BUILDER) --driver=docker-container --driver-opt=network=host
-
-push-extension: prepare-buildx ## Build & Upload extension image to hub. Do not push if tag already exists: make push-extension tag=0.1
-	docker pull $(IMAGE):$(TAG) && echo "Failure: Tag already exists" || docker buildx build --push --builder=$(BUILDER) --platform=linux/amd64,linux/arm64 --build-arg TAG=$(TAG) --tag=$(IMAGE):$(TAG) .
-
-push-extension-force-no-cache: prepare-buildx ## Build & Upload extension image to hub. Force push if tag already exists.
-	docker buildx build --no-cache --push --builder=$(BUILDER) --platform=linux/amd64,linux/arm64 --build-arg TAG=$(TAG) --tag=$(IMAGE):$(TAG) .
-
-help: ## Show this help
-	@echo Please specify a build target. The choices are:
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(INFO_COLOR)%-30s$(NO_COLOR) %s\n", $$1, $$2}'
-
-.PHONY: help
+# Run tests
+test:
+	@echo "Running tests..."
+	cd backend && go test ./...
+	cd ui && npm test

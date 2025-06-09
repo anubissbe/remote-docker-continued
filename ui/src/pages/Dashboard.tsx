@@ -273,28 +273,44 @@ const Dashboard: React.FC<DashboardProps> = ({
       };
 
       // Load overview data
-      const overviewData = await ddClient.extension.vm.service.post('/dashboard/overview', requestPayload);
+      const overviewResponse = await ddClient.extension.vm.service.post('/dashboard/overview', requestPayload);
+      let overviewData = overviewResponse;
+      if (overviewResponse && typeof overviewResponse === 'object' && 'data' in overviewResponse) {
+        overviewData = overviewResponse.data;
+      }
       if (overviewData && typeof overviewData === 'object' && 'error' in overviewData) {
         throw new Error(overviewData.error as string);
       }
       setOverview(overviewData as DashboardOverview);
 
       // Load resource usage data
-      const resourcesData = await ddClient.extension.vm.service.post('/dashboard/resources', requestPayload);
+      const resourcesResponse = await ddClient.extension.vm.service.post('/dashboard/resources', requestPayload);
+      let resourcesData = resourcesResponse;
+      if (resourcesResponse && typeof resourcesResponse === 'object' && 'data' in resourcesResponse) {
+        resourcesData = resourcesResponse.data;
+      }
       if (resourcesData && typeof resourcesData === 'object' && 'error' in resourcesData) {
         throw new Error(resourcesData.error as string);
       }
       setResources(resourcesData as ResourcesResponse);
 
       // Load system info
-      const systemInfoData = await ddClient.extension.vm.service.post('/dashboard/systeminfo', requestPayload);
+      const systemInfoResponse = await ddClient.extension.vm.service.post('/dashboard/systeminfo', requestPayload);
+      let systemInfoData = systemInfoResponse;
+      if (systemInfoResponse && typeof systemInfoResponse === 'object' && 'data' in systemInfoResponse) {
+        systemInfoData = systemInfoResponse.data;
+      }
       if (systemInfoData && typeof systemInfoData === 'object' && 'error' in systemInfoData) {
         throw new Error(systemInfoData.error as string);
       }
       setSystemInfo(systemInfoData as SystemInfoResponse);
 
       // Load events
-      const eventsData = await ddClient.extension.vm.service.post('/dashboard/events', requestPayload);
+      const eventsResponse = await ddClient.extension.vm.service.post('/dashboard/events', requestPayload);
+      let eventsData = eventsResponse;
+      if (eventsResponse && typeof eventsResponse === 'object' && 'data' in eventsResponse) {
+        eventsData = eventsResponse.data;
+      }
       if (eventsData && typeof eventsData === 'object' && 'error' in eventsData) {
         throw new Error(eventsData.error as string);
       }

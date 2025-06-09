@@ -80,9 +80,25 @@ RUN apk add --no-cache ca-certificates
 # Create necessary SSH directories
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 
+# Add a startup script to fix SSH permissions
+RUN echo '#!/bin/sh' > /fix-ssh-permissions.sh && \
+    echo 'if [ -d /root/.ssh-host ]; then' >> /fix-ssh-permissions.sh && \
+    echo '  cp -r /root/.ssh-host/* /root/.ssh/ 2>/dev/null || true' >> /fix-ssh-permissions.sh && \
+    echo '  chmod 700 /root/.ssh' >> /fix-ssh-permissions.sh && \
+    echo '  chmod 600 /root/.ssh/id_* 2>/dev/null || true' >> /fix-ssh-permissions.sh && \
+    echo '  chmod 644 /root/.ssh/*.pub 2>/dev/null || true' >> /fix-ssh-permissions.sh && \
+    echo 'fi' >> /fix-ssh-permissions.sh && \
+    echo 'exec "$@"' >> /fix-ssh-permissions.sh && \
+    chmod +x /fix-ssh-permissions.sh
+
+# Force cache invalidation
+ARG CACHEBUST=1
+
 COPY --from=builder /backend/bin/service /
 COPY docker-compose.yaml .
 COPY metadata.json .
 COPY assets/extension-icon.svg .
-COPY --from=client-builder /ui/build ui
-CMD /service -socket /run/guest-services/backend.sock
+COPY --from=client-builder /ui/build/ ui/
+
+ENTRYPOINT ["/fix-ssh-permissions.sh"]
+CMD ["/service", "-socket", "/run/guest-services/backend.sock"]
