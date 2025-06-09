@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -trimpath -ldflags="-s -w" -o bin/service
 
-FROM --platform=$BUILDPLATFORM node:21.6-alpine3.18 AS client-builder
+FROM --platform=$BUILDPLATFORM node:22.2-alpine3.18 AS client-builder
 WORKDIR /ui
 # cache packages in layer
 COPY ui/package.json /ui/package.json
