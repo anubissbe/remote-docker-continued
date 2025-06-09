@@ -154,12 +154,23 @@ export function App() {
 
       const response = await ddClient.extension.vm.service.get('/settings');
 
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
       // Parse response if it's a string
       let parsedSettings: ExtensionSettings;
-      if (typeof response === 'string') {
-        parsedSettings = JSON.parse(response);
+      if (typeof actualResponse === 'string') {
+        parsedSettings = JSON.parse(actualResponse);
       } else {
-        parsedSettings = response as ExtensionSettings;
+        parsedSettings = actualResponse as ExtensionSettings;
+      }
+
+      // Ensure settings have required structure
+      if (!parsedSettings.environments) {
+        parsedSettings.environments = [];
       }
 
       setSettings(parsedSettings);
@@ -200,15 +211,44 @@ export function App() {
       const stringifiedSettings = JSON.stringify(newSettings);
       const response = await ddClient.extension.vm.service.post('/settings', stringifiedSettings);
 
+      console.log('Save settings response:', response, typeof response);
+      
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      
+      // If response has a 'data' property, that's the actual response from our backend
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+        console.log('Extracted data from wrapped response:', actualResponse);
+      }
+      
+      // Docker Desktop API might return the response as a string
+      let parsedResponse = actualResponse;
+      if (typeof actualResponse === 'string') {
+        try {
+          parsedResponse = JSON.parse(actualResponse);
+          console.log('Parsed response:', parsedResponse);
+        } catch (e) {
+          console.error('Failed to parse response as JSON:', actualResponse);
+          // Show error to user
+          ddClient.desktopUI.toast.error(`Backend returned invalid response: ${actualResponse}`);
+          return false;
+        }
+      }
+      
       // Check if the response indicates success
-      const success = response && typeof response === 'object' && 'success' in response;
+      // Accept both string "true" and boolean true for success property
+      const success = parsedResponse && typeof parsedResponse === 'object' && 
+                     ('success' in parsedResponse && (parsedResponse.success === 'true' || parsedResponse.success === true));
 
       if (success) {
         setSettings(newSettings);
         console.log('Settings saved successfully:', newSettings);
+        ddClient.desktopUI.toast.success('Settings saved successfully');
         return true;
       } else {
         console.error('Failed to save settings, unexpected response:', response);
+        ddClient.desktopUI.toast.error(`Failed to save settings. Response: ${JSON.stringify(parsedResponse)}`);
         return false;
       }
     } catch (err: any) {
@@ -240,13 +280,28 @@ export function App() {
       const response = await ddClient.extension.vm?.service?.post('/tunnel/open', {
         hostname: env.hostname,
         username: env.username
-      }) as TunnelResponse;
+      });
 
-      if (response && response.success === "true") {
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+      
+      // Parse if string
+      let tunnelResponse: TunnelResponse;
+      if (typeof actualResponse === 'string') {
+        tunnelResponse = JSON.parse(actualResponse);
+      } else {
+        tunnelResponse = actualResponse as TunnelResponse;
+      }
+
+      if (tunnelResponse && tunnelResponse.success === "true") {
         setIsTunnelActive(true);
         console.log(`SSH tunnel opened for ${env.username}@${env.hostname}`);
+        ddClient.desktopUI.toast.success(`Connected to ${env.hostname}`);
       } else {
-        throw new Error((response && response.error) || 'Unknown error opening SSH tunnel');
+        throw new Error((tunnelResponse && tunnelResponse.error) || 'Unknown error opening SSH tunnel');
       }
     } catch (err: any) {
       console.error('Failed to open SSH tunnel:', err);

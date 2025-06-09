@@ -233,14 +233,20 @@ const Containers: React.FC<ContainersProps> = ({
         username: activeEnvironment.username,
       });
 
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
       // Check for error response
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
       // Cast response to Container array
-      const data = response as ContainersResponse;
+      const data = actualResponse as ContainersResponse;
 
       // Update states
       setComposeGroups(data.composeGroups);
@@ -283,8 +289,14 @@ const Containers: React.FC<ContainersProps> = ({
         containerId
       });
 
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
@@ -313,8 +325,14 @@ const Containers: React.FC<ContainersProps> = ({
         containerId
       });
 
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 

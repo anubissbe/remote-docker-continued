@@ -876,7 +876,8 @@ func (m *SSHTunnelManager) OpenConnection(username, hostname string) error {
 		"-o", "ControlPersist=yes",
 		"-o", "ServerAliveInterval=10",
 		"-o", "ServerAliveCountMax=2",
-		"-o", "StrictHostKeyChecking=no",
+		"-o", "StrictHostKeyChecking=accept-new",
+		"-o", "UserKnownHostsFile=/dev/null",
 		"-o", "BatchMode=yes", // Non-interactive mode
 		"-N", // Don't execute any command, just forward
 		fmt.Sprintf("%s@%s", username, hostname),
@@ -1668,13 +1669,19 @@ func saveSettings(ctx echo.Context) error {
 	}
 
 	// Ensure directory exists
-	os.MkdirAll(filepath.Dir(settingsFilePath), 0755)
+	dir := filepath.Dir(settingsFilePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logger.Errorf("Error creating directory %s: %v", dir, err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to create settings directory: %v", err),
+		})
+	}
 
 	// Write settings to file
 	if err := ioutil.WriteFile(settingsFilePath, body, 0644); err != nil {
-		logger.Errorf("Error writing settings: %v", err)
+		logger.Errorf("Error writing settings to %s: %v", settingsFilePath, err)
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to save settings",
+			"error": fmt.Sprintf("Failed to save settings: %v", err),
 		})
 	}
 

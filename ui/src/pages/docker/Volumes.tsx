@@ -137,14 +137,20 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
         username: activeEnvironment.username,
       });
 
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
       // Check for error response
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
       // Cast response to Volume array
-      const volumeData = response as Volume[];
+      const volumeData = actualResponse as Volume[];
       setVolumes(volumeData);
       setLastRefreshTime(new Date()); // Update last refresh time
       console.log('Volumes loaded:', volumeData);
@@ -174,8 +180,14 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
         volumeName
       });
 
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 

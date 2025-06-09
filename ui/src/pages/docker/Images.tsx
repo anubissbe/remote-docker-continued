@@ -136,23 +136,29 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
         username: activeEnvironment.username,
       });
 
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
       // Check for error response
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
       // For now, we're assuming this endpoint isn't implemented yet
       // So we'll handle it gracefully with a custom message
       // This should be replaced with actual implementation
-      if (!response || !Array.isArray(response)) {
+      if (!actualResponse || !Array.isArray(actualResponse)) {
         setImages([]);
         setError('Images API endpoint not implemented yet');
         return;
       }
 
       // Cast response to Image array
-      const imageData = response as Image[];
+      const imageData = actualResponse as Image[];
       setImages(imageData);
       setLastRefreshTime(new Date()); // Update last refresh time
       console.log('Images loaded:', imageData);
@@ -183,8 +189,14 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
         imageId: imageId
       });
 
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 

@@ -140,14 +140,20 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
         username: activeEnvironment.username,
       });
 
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
       // Check for error response
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
       // Cast response to Network array
-      const networkData = response as Network[];
+      const networkData = actualResponse as Network[];
       setNetworks(networkData);
       setLastRefreshTime(new Date()); // Update last refresh time
       console.log('Networks loaded:', networkData);
@@ -177,8 +183,14 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
         networkId
       });
 
-      if (response && typeof response === 'object' && 'error' in response) {
-        const errorResponse = response as ErrorResponse;
+      // Docker Desktop API wraps the response
+      let actualResponse = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = response.data;
+      }
+
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        const errorResponse = actualResponse as ErrorResponse;
         throw new Error(errorResponse.error);
       }
 
