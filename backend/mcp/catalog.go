@@ -1,9 +1,7 @@
 package mcp
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -259,7 +257,7 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 	}
 	
 	imageName := parts[0]
-	tag := parts[1]
+	// tag := parts[1] // Reserved for future use
 	
 	// Return predefined configs for known servers
 	switch imageName {
