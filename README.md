@@ -375,6 +375,16 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 - **Docker Hub**: [telkombe/remote-docker](https://hub.docker.com/r/telkombe/remote-docker)
 - **Repository**: [anubissbe/remote-docker](https://github.com/anubissbe/remote-docker)
 
+## ☕ Support the Project
+
+If you find this extension helpful and want to support its development, consider buying me a coffee! Your support helps maintain and improve the project.
+
+<a href="https://buymeacoffee.com/anubissbe" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+</a>
+
+Every contribution, no matter how small, is greatly appreciated and helps keep this project active and improving! 🙏
+
 ## 📄 License & Disclaimer
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
