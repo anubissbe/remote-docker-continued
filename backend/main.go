@@ -1948,6 +1948,10 @@ func createMCPServer(ctx echo.Context) error {
 // List all MCP servers
 func listMCPServers(ctx echo.Context) error {
 	servers := mcpManager.ListServers()
+	logger.Infof("ListServers returned %d servers", len(servers))
+	for i, server := range servers {
+		logger.Infof("Server %d: ID=%s, Name=%s, Status=%s", i, server.ID, server.Name, server.Status)
+	}
 	
 	return ctx.JSON(http.StatusOK, mcp.MCPServerListResponse{
 		Servers: servers,

@@ -2,7 +2,10 @@ package mcp
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 	
@@ -11,10 +14,11 @@ import (
 
 // Manager handles MCP server lifecycle
 type Manager struct {
-	servers map[string]*MCPServer
-	mu      sync.RWMutex
-	sshMgr  SSHManager
-	logger  *logrus.Logger
+	servers    map[string]*MCPServer
+	mu         sync.RWMutex
+	sshMgr     SSHManager
+	logger     *logrus.Logger
+	dataFile   string
 }
 
 // SSHManager interface for SSH operations
@@ -27,11 +31,25 @@ type SSHManager interface {
 
 // NewManager creates a new MCP manager
 func NewManager(sshMgr SSHManager, logger *logrus.Logger) *Manager {
-	return &Manager{
-		servers: make(map[string]*MCPServer),
-		sshMgr:  sshMgr,
-		logger:  logger,
+	dataFile := "/root/docker-extension/mcp-servers.json"
+	
+	// Ensure directory exists
+	dir := filepath.Dir(dataFile)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logger.Warnf("Failed to create MCP data directory: %v", err)
 	}
+	
+	manager := &Manager{
+		servers:  make(map[string]*MCPServer),
+		sshMgr:   sshMgr,
+		logger:   logger,
+		dataFile: dataFile,
+	}
+	
+	// Load existing servers
+	manager.loadServers()
+	
+	return manager
 }
 
 // CreateServer creates a new MCP server on the remote host
@@ -58,6 +76,9 @@ func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPS
 	
 	// Store server
 	m.servers[serverID] = server
+	
+	// Save to disk
+	m.saveServers()
 	
 	// Deploy in background
 	go m.deployServer(ctx, server)
@@ -327,6 +348,8 @@ func (m *Manager) updateServerStatus(serverID, status string) {
 	
 	if server, exists := m.servers[serverID]; exists {
 		server.Status = status
+		// Save to disk after updating status
+		m.saveServersUnsafe()
 	}
 }
 
@@ -336,5 +359,63 @@ func (m *Manager) updateServerContainerID(serverID, containerID string) {
 	
 	if server, exists := m.servers[serverID]; exists {
 		server.ContainerID = containerID
+		// Save to disk after updating container ID
+		m.saveServersUnsafe()
 	}
+}
+
+// saveServers saves servers to disk (with locking)
+func (m *Manager) saveServers() {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	m.saveServersUnsafe()
+}
+
+// saveServersUnsafe saves servers to disk (without locking - caller must hold lock)
+func (m *Manager) saveServersUnsafe() {
+	// Convert servers to a slice for JSON serialization
+	serversList := make([]MCPServer, 0, len(m.servers))
+	for _, server := range m.servers {
+		serversList = append(serversList, *server)
+	}
+	
+	data, err := json.MarshalIndent(serversList, "", "  ")
+	if err != nil {
+		m.logger.Errorf("Failed to marshal MCP servers: %v", err)
+		return
+	}
+	
+	if err := os.WriteFile(m.dataFile, data, 0644); err != nil {
+		m.logger.Errorf("Failed to save MCP servers to %s: %v", m.dataFile, err)
+		return
+	}
+	
+	m.logger.Debugf("Saved %d MCP servers to %s", len(serversList), m.dataFile)
+}
+
+// loadServers loads servers from disk
+func (m *Manager) loadServers() {
+	data, err := os.ReadFile(m.dataFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			m.logger.Infof("No existing MCP servers file found at %s", m.dataFile)
+		} else {
+			m.logger.Errorf("Failed to read MCP servers from %s: %v", m.dataFile, err)
+		}
+		return
+	}
+	
+	var serversList []MCPServer
+	if err := json.Unmarshal(data, &serversList); err != nil {
+		m.logger.Errorf("Failed to unmarshal MCP servers: %v", err)
+		return
+	}
+	
+	// Convert slice back to map
+	for i := range serversList {
+		server := &serversList[i]
+		m.servers[server.ID] = server
+	}
+	
+	m.logger.Infof("Loaded %d MCP servers from %s", len(serversList), m.dataFile)
 }
