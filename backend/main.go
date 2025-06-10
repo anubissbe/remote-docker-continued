@@ -2185,12 +2185,41 @@ func installFromCatalog(ctx echo.Context) error {
 		})
 	}
 	
-	// Create the server
-	server, err := mcpManager.CreateServer(ctx.Request().Context(), mcpReq)
-	if err != nil {
-		logger.Errorf("Failed to create MCP server from catalog: %v", err)
+	// Create the server with timeout
+	logger.Info("About to call mcpManager.CreateServer")
+	
+	// Create a timeout context
+	timeoutCtx, cancel := context.WithTimeout(ctx.Request().Context(), 10*time.Second)
+	defer cancel()
+	
+	// Use a channel to handle the result
+	type result struct {
+		server *mcp.MCPServer
+		err    error
+	}
+	
+	resultChan := make(chan result, 1)
+	go func() {
+		server, err := mcpManager.CreateServer(timeoutCtx, mcpReq)
+		resultChan <- result{server: server, err: err}
+	}()
+	
+	// Wait for result or timeout
+	var server *mcp.MCPServer
+	select {
+	case res := <-resultChan:
+		if res.err != nil {
+			logger.Errorf("Failed to create MCP server from catalog: %v", res.err)
+			return ctx.JSON(http.StatusInternalServerError, map[string]string{
+				"error": fmt.Sprintf("Failed to create server: %v", res.err),
+			})
+		}
+		logger.Infof("MCP server created successfully: %s", res.server.ID)
+		server = res.server
+	case <-timeoutCtx.Done():
+		logger.Error("Timeout waiting for MCP server creation")
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
-			"error": fmt.Sprintf("Failed to create server: %v", err),
+			"error": "Timeout creating MCP server",
 		})
 	}
 	

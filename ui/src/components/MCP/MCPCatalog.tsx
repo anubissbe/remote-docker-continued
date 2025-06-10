@@ -246,23 +246,61 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       }
       
       addLog('Docker Desktop client is available');
+      
+      // Test if API works with a known endpoint
+      addLog('Testing API with /mcp/servers endpoint first...');
+      try {
+        const testResponse = await ddClient.extension.vm.service.get('/mcp/servers');
+        addLog('✅ Test API call successful - API is working');
+      } catch (testErr) {
+        addLog(`❌ Test API call failed: ${testErr}`);
+        addLog('API might not be working properly');
+      }
+      
       addLog('Calling POST /mcp/catalog/install...');
       
       let response;
       try {
         addLog('About to call ddClient.extension.vm.service.post...');
         
-        // Add timeout wrapper
+        // Test with a simple direct call first
+        addLog('Making direct API call without timeout...');
+        
+        // Try to catch any synchronous errors
+        let apiCallPromise;
+        try {
+          apiCallPromise = ddClient.extension.vm.service.post('/mcp/catalog/install', request);
+          addLog('API call initiated successfully');
+        } catch (syncErr) {
+          addLog(`❌ Synchronous error creating API call: ${syncErr}`);
+          throw syncErr;
+        }
+        
+        // Check if it's actually a promise
+        if (!apiCallPromise || typeof apiCallPromise.then !== 'function') {
+          addLog(`❌ API call did not return a promise. Type: ${typeof apiCallPromise}`);
+          throw new Error('API call did not return a promise');
+        }
+        
+        addLog('Waiting for API response...');
+        
+        // Use a manual timeout approach
+        let timeoutId;
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('API call timeout after 10 seconds')), 10000);
+          timeoutId = setTimeout(() => {
+            addLog('⏱️ Timeout triggered after 5 seconds');
+            reject(new Error('API call timeout after 5 seconds'));
+          }, 5000);
         });
         
-        addLog('Creating API call promise...');
-        const apiCallPromise = ddClient.extension.vm.service.post('/mcp/catalog/install', request);
-        addLog('API call promise created, waiting for response...');
-        
-        response = await Promise.race([apiCallPromise, timeoutPromise]);
-        addLog('API call completed');
+        try {
+          response = await Promise.race([apiCallPromise, timeoutPromise]);
+          clearTimeout(timeoutId);
+          addLog('API call completed successfully');
+        } catch (raceErr) {
+          clearTimeout(timeoutId);
+          throw raceErr;
+        }
       } catch (apiErr) {
         addLog(`❌ API call failed: ${apiErr}`);
         addLog(`Error type: ${typeof apiErr}`);
