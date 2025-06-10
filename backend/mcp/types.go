@@ -22,6 +22,7 @@ type MCPConfig struct {
 	Image   string            `json:"image"`
 	Command []string          `json:"command,omitempty"`
 	Env     map[string]string `json:"env,omitempty"`
+	Volumes map[string]string `json:"volumes,omitempty"`
 	
 	// Type-specific fields
 	Filesystem *FilesystemConfig `json:"filesystem,omitempty"`

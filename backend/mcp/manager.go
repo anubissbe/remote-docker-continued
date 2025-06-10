@@ -252,6 +252,11 @@ func (m *Manager) buildDockerCommand(server *MCPServer) string {
 		cmd += fmt.Sprintf(" -e %s=%s", k, v)
 	}
 	
+	// Add volumes
+	for src, dst := range server.Config.Volumes {
+		cmd += fmt.Sprintf(" -v %s:%s", src, dst)
+	}
+	
 	// Add type-specific configurations
 	switch server.Type {
 	case "filesystem":

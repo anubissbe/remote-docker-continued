@@ -269,6 +269,9 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			Env: map[string]string{
 				"MCP_PORT": "9000",
 			},
+			Volumes: map[string]string{
+				"/home": "/workspace",
+			},
 			Filesystem: &FilesystemConfig{
 				RootPath: "/home",
 				ReadOnly: false,
@@ -281,6 +284,9 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			Env: map[string]string{
 				"MCP_PORT": "9000",
 				"DOCKER_HOST": "unix:///var/run/docker.sock",
+			},
+			Volumes: map[string]string{
+				"/var/run/docker.sock": "/var/run/docker.sock",
 			},
 			Docker: &DockerConfig{
 				SocketPath: "/var/run/docker.sock",

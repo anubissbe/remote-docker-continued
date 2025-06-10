@@ -13,6 +13,7 @@ export interface MCPConfig {
   image: string;
   command?: string[];
   env?: Record<string, string>;
+  volumes?: Record<string, string>;
   filesystem?: FilesystemConfig;
   docker?: DockerConfig;
   shell?: ShellConfig;
