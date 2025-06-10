@@ -91,6 +91,7 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
   const [installDialogOpen, setInstallDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
   const [customName, setCustomName] = useState('');
+  const [installLog, setInstallLog] = useState<string[]>([]);
 
   // Load catalog
   const loadCatalog = async (page: number = 1, search: string = '', category: string = 'all') => {
@@ -192,17 +193,22 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
 
   // Install from catalog
   const handleInstall = async () => {
-    console.log('handleInstall called - button was clicked!');
-    console.log('currentEnv:', currentEnv);
-    console.log('selectedItem:', selectedItem);
-    console.log('installing state:', installing);
+    setInstallLog([]); // Clear previous logs
+    const addLog = (message: string) => {
+      setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+    };
+    
+    addLog('Install button clicked');
+    addLog(`Environment: ${currentEnv?.name || 'None'}`);
+    addLog(`Server: ${selectedItem?.name || 'None'}`);
     
     if (!currentEnv || !selectedItem) {
-      console.error('Missing currentEnv or selectedItem:', { currentEnv, selectedItem });
+      addLog('❌ ERROR: Missing environment or server selection');
+      setError('Missing environment or server selection');
       return;
     }
     
-    console.log('Starting MCP server installation:', selectedItem.name);
+    addLog(`Starting installation of ${selectedItem.name}`);
     setInstalling(selectedItem.full_name);
     
     try {
@@ -214,9 +220,34 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
         autoStart: true,
       };
       
-      console.log('Installing MCP server with request:', request);
-      const response = await ddClient.extension?.vm?.service?.post('/mcp/catalog/install', request);
-      console.log('Install response:', response);
+      addLog('Sending install request to backend...');
+      addLog(`Request: ${JSON.stringify(request, null, 2)}`);
+      
+      // Check if ddClient is available
+      if (!ddClient || !ddClient.extension || !ddClient.extension.vm || !ddClient.extension.vm.service) {
+        addLog('❌ ERROR: Docker Desktop client not available');
+        addLog(`ddClient: ${!!ddClient}`);
+        addLog(`ddClient.extension: ${!!ddClient?.extension}`);
+        addLog(`ddClient.extension.vm: ${!!ddClient?.extension?.vm}`);
+        addLog(`ddClient.extension.vm.service: ${!!ddClient?.extension?.vm?.service}`);
+        throw new Error('Docker Desktop client not available');
+      }
+      
+      addLog('Docker Desktop client is available');
+      addLog('Calling POST /mcp/catalog/install...');
+      
+      let response;
+      try {
+        response = await ddClient.extension.vm.service.post('/mcp/catalog/install', request);
+        addLog('API call completed');
+      } catch (apiErr) {
+        addLog(`❌ API call failed: ${apiErr}`);
+        throw apiErr;
+      }
+      
+      addLog('Received response from backend');
+      addLog(`Response type: ${typeof response}`);
+      addLog(`Response: ${JSON.stringify(response, null, 2)}`);
       
       // Check if response indicates success
       if (!response) {
@@ -227,24 +258,37 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       let actualResponse: any = response;
       if (response && typeof response === 'object' && 'data' in response) {
         actualResponse = (response as any).data;
+        addLog('Extracted data from wrapped response');
       }
       
-      console.log('Actual response:', actualResponse);
+      addLog(`Actual response: ${JSON.stringify(actualResponse, null, 2)}`);
+      
+      // Check for error in response
+      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+        throw new Error(actualResponse.error);
+      }
       
       ddClient.desktopUI?.toast?.success(`Installing ${selectedItem.name}...`);
+      addLog('✅ Installation request sent successfully');
+      addLog('Note: Installation happens in the background. Check MCP Servers list for status.');
       
-      // Close dialog and notify parent
-      setInstallDialogOpen(false);
-      setSelectedItem(null);
-      setCustomName('');
-      
-      if (onInstallComplete) {
-        onInstallComplete();
-      }
+      // Keep dialog open for a moment to show success
+      setTimeout(() => {
+        setInstallDialogOpen(false);
+        setSelectedItem(null);
+        setCustomName('');
+        setInstallLog([]);
+        
+        if (onInstallComplete) {
+          onInstallComplete();
+        }
+      }, 3000);
     } catch (err) {
-      console.error('Error installing MCP server:', err);
-      console.error('Error details:', err instanceof Error ? err.message : String(err));
-      ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      addLog(`❌ ERROR: ${errorMessage}`);
+      addLog(`Error stack: ${err instanceof Error ? err.stack : 'No stack trace'}`);
+      setError(`Failed to install: ${errorMessage}`);
+      ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + errorMessage);
     } finally {
       setInstalling(null);
     }
@@ -415,8 +459,11 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       {/* Install Dialog */}
       <Dialog
         open={installDialogOpen}
-        onClose={() => setInstallDialogOpen(false)}
-        maxWidth="sm"
+        onClose={() => {
+          setInstallDialogOpen(false);
+          setInstallLog([]);
+        }}
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>Install MCP Server</DialogTitle>
@@ -444,11 +491,38 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
               <Typography variant="caption" color="textSecondary">
                 This will pull the image <code>{selectedItem.full_name}</code> and create a new MCP server instance.
               </Typography>
+              
+              {/* Debug Log Display */}
+              {installLog.length > 0 && (
+                <Paper sx={{ p: 2, bgcolor: 'grey.100', maxHeight: 300, overflow: 'auto' }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Installation Log:
+                  </Typography>
+                  <Box component="pre" sx={{ 
+                    fontFamily: 'monospace', 
+                    fontSize: '0.875rem',
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word'
+                  }}>
+                    {installLog.join('\n')}
+                  </Box>
+                </Paper>
+              )}
+              
+              {error && (
+                <Alert severity="error">
+                  {error}
+                </Alert>
+              )}
             </Stack>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setInstallDialogOpen(false)}>
+          <Button onClick={() => {
+            setInstallDialogOpen(false);
+            setInstallLog([]);
+            setError(null);
+          }}>
             Cancel
           </Button>
           <Button
@@ -461,8 +535,9 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
             }}
             variant="contained"
             disabled={!selectedItem || installing !== null}
+            startIcon={installing ? <CircularProgress size={16} /> : null}
           >
-            Install & Start
+            {installing ? 'Installing...' : 'Install & Start'}
           </Button>
         </DialogActions>
       </Dialog>
