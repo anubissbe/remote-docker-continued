@@ -225,13 +225,24 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       addLog(`Request: ${JSON.stringify(request, null, 2)}`);
       
       // Check if ddClient is available
-      if (!ddClient || !ddClient.extension || !ddClient.extension.vm || !ddClient.extension.vm.service) {
-        addLog('❌ ERROR: Docker Desktop client not available');
-        addLog(`ddClient: ${!!ddClient}`);
-        addLog(`ddClient.extension: ${!!ddClient?.extension}`);
-        addLog(`ddClient.extension.vm: ${!!ddClient?.extension?.vm}`);
-        addLog(`ddClient.extension.vm.service: ${!!ddClient?.extension?.vm?.service}`);
-        throw new Error('Docker Desktop client not available');
+      if (!ddClient) {
+        addLog('❌ ERROR: ddClient is null or undefined');
+        throw new Error('Docker Desktop client not initialized');
+      }
+      
+      if (!ddClient.extension) {
+        addLog('❌ ERROR: ddClient.extension is undefined');
+        throw new Error('Docker Desktop extension not available');
+      }
+      
+      if (!ddClient.extension.vm) {
+        addLog('❌ ERROR: ddClient.extension.vm is undefined');
+        throw new Error('Docker Desktop VM service not available');
+      }
+      
+      if (!ddClient.extension.vm.service) {
+        addLog('❌ ERROR: ddClient.extension.vm.service is undefined');
+        throw new Error('Docker Desktop service API not available');
       }
       
       addLog('Docker Desktop client is available');
@@ -240,7 +251,17 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       let response;
       try {
         addLog('About to call ddClient.extension.vm.service.post...');
-        response = await ddClient.extension.vm.service.post('/mcp/catalog/install', request);
+        
+        // Add timeout wrapper
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('API call timeout after 10 seconds')), 10000);
+        });
+        
+        addLog('Creating API call promise...');
+        const apiCallPromise = ddClient.extension.vm.service.post('/mcp/catalog/install', request);
+        addLog('API call promise created, waiting for response...');
+        
+        response = await Promise.race([apiCallPromise, timeoutPromise]);
         addLog('API call completed');
       } catch (apiErr) {
         addLog(`❌ API call failed: ${apiErr}`);
