@@ -98,6 +98,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           name: 'Filesystem Access',
           description: 'Read and write files on the remote host',
           type: 'filesystem',
+          icon: 'folder',
           config: {
             image: 'anthropic/mcp-server-filesystem:latest',
             env: {
@@ -110,6 +111,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           name: 'Docker Management',
           description: 'Manage Docker containers, images, and networks',
           type: 'docker',
+          icon: 'docker',
           config: {
             image: 'anthropic/mcp-server-docker:latest',
             env: {
@@ -122,6 +124,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           name: 'Shell Access (Bash)',
           description: 'Execute bash commands on the remote host',
           type: 'shell',
+          icon: 'terminal',
           config: {
             image: 'anthropic/mcp-server-shell:latest',
             env: {
