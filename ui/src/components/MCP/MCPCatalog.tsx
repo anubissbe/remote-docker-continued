@@ -193,25 +193,26 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
 
   // Install from catalog
   const handleInstall = async () => {
-    setInstallLog([]); // Clear previous logs
-    const addLog = (message: string) => {
-      setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
-    };
-    
-    addLog('Install button clicked');
-    addLog(`Environment: ${currentEnv?.name || 'None'}`);
-    addLog(`Server: ${selectedItem?.name || 'None'}`);
-    
-    if (!currentEnv || !selectedItem) {
-      addLog('❌ ERROR: Missing environment or server selection');
-      setError('Missing environment or server selection');
-      return;
-    }
-    
-    addLog(`Starting installation of ${selectedItem.name}`);
-    setInstalling(selectedItem.full_name);
-    
     try {
+      setInstallLog([]); // Clear previous logs
+      const addLog = (message: string) => {
+        setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+      };
+      
+      addLog('Install button clicked');
+      addLog(`Environment: ${currentEnv?.name || 'None'}`);
+      addLog(`Server: ${selectedItem?.name || 'None'}`);
+      
+      if (!currentEnv || !selectedItem) {
+        addLog('❌ ERROR: Missing environment or server selection');
+        setError('Missing environment or server selection');
+        return;
+      }
+      
+      addLog(`Starting installation of ${selectedItem.name}`);
+      setInstalling(selectedItem.full_name);
+      
+      try {
       const request = {
         fullName: selectedItem.full_name,
         name: customName || selectedItem.name,
@@ -238,10 +239,22 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       
       let response;
       try {
+        addLog('About to call ddClient.extension.vm.service.post...');
         response = await ddClient.extension.vm.service.post('/mcp/catalog/install', request);
         addLog('API call completed');
       } catch (apiErr) {
         addLog(`❌ API call failed: ${apiErr}`);
+        addLog(`Error type: ${typeof apiErr}`);
+        addLog(`Error name: ${apiErr instanceof Error ? apiErr.name : 'Not an Error object'}`);
+        addLog(`Error message: ${apiErr instanceof Error ? apiErr.message : String(apiErr)}`);
+        addLog(`Error stack: ${apiErr instanceof Error ? apiErr.stack : 'No stack trace'}`);
+        
+        // Check if it's a specific Docker Desktop error
+        if (apiErr && typeof apiErr === 'object') {
+          addLog(`Error object keys: ${Object.keys(apiErr).join(', ')}`);
+          addLog(`Error object: ${JSON.stringify(apiErr, null, 2)}`);
+        }
+        
         throw apiErr;
       }
       
@@ -290,6 +303,17 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       setError(`Failed to install: ${errorMessage}`);
       ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + errorMessage);
     } finally {
+      setInstalling(null);
+    }
+    } catch (outerErr) {
+      // Catch any errors that weren't caught in the inner try-catch
+      const addLog = (message: string) => {
+        setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+      };
+      addLog(`❌ UNCAUGHT ERROR: ${outerErr}`);
+      addLog(`Error type: ${typeof outerErr}`);
+      addLog(`Error details: ${outerErr instanceof Error ? outerErr.stack : String(outerErr)}`);
+      setError(`Unexpected error: ${outerErr instanceof Error ? outerErr.message : String(outerErr)}`);
       setInstalling(null);
     }
   };
