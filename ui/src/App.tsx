@@ -119,37 +119,8 @@ export function App() {
     loadSettings();
   }, []);
 
-  // Set up periodic connection health checks instead of visibility detection
-  useEffect(() => {
-    let healthCheckInterval: NodeJS.Timeout;
-
-    if (settings.activeEnvironmentId) {
-      const env = getActiveEnvironment();
-      if (env) {
-        // Check connection health every 30 seconds
-        healthCheckInterval = setInterval(async () => {
-          try {
-            const isConnected = await checkTunnelStatus(env);
-            console.log('Periodic health check - tunnel active:', isConnected);
-            
-            // Only reconnect if we're supposed to have a connection but don't
-            if (!isConnected && settings.activeEnvironmentId === env.id) {
-              console.log('Health check failed - reconnecting...');
-              await checkAndOpenTunnel(env);
-            }
-          } catch (error) {
-            console.error('Health check error:', error);
-          }
-        }, 30000); // 30 seconds
-      }
-    }
-
-    return () => {
-      if (healthCheckInterval) {
-        clearInterval(healthCheckInterval);
-      }
-    };
-  }, [settings.activeEnvironmentId]);
+  // Remove automatic health checks that cause disconnections
+  // Connection will only be managed manually through user actions
 
   // Load settings from extension storage
   const loadSettings = async () => {
@@ -195,8 +166,11 @@ export function App() {
         const activeEnv = parsedSettings.environments.find(
           env => env.id === parsedSettings.activeEnvironmentId
         );
-        if (activeEnv && settings.autoConnect) {
+        if (activeEnv && parsedSettings.autoConnect) {
+          console.log('Auto-connecting to saved environment:', activeEnv.id);
           checkAndOpenTunnel(activeEnv);
+        } else {
+          console.log('Active environment found but auto-connect disabled');
         }
       }
     } catch (err: any) {
@@ -390,23 +364,42 @@ export function App() {
   const setActiveEnvironment = async (environmentId: string | undefined) => {
     const prevEnv = getActiveEnvironment();
     
-    // Only close tunnel if switching to a different environment
-    if (prevEnv && prevEnv.id !== environmentId) {
-      await closeTunnel(prevEnv);
+    console.log('setActiveEnvironment called:', { 
+      prevEnv: prevEnv?.id, 
+      newEnv: environmentId,
+      currentActive: settings.activeEnvironmentId
+    });
+    
+    // If we're setting the same environment, don't do anything
+    if (settings.activeEnvironmentId === environmentId) {
+      console.log('Same environment selected, no action needed');
+      return;
     }
 
-    // Update the active environment in settings
+    // Update the active environment in settings first
     const newSettings = {
       ...settings,
       activeEnvironmentId: environmentId
     };
 
     const success = await saveSettings(newSettings);
+    
+    if (!success) {
+      console.error('Failed to save settings, aborting environment change');
+      return;
+    }
 
-    // If we have a new active environment and it's different from current, open its tunnel
-    if (success && environmentId && (!prevEnv || prevEnv.id !== environmentId)) {
+    // Only close tunnel if switching to a completely different environment
+    if (prevEnv && prevEnv.id !== environmentId) {
+      console.log('Closing tunnel for previous environment:', prevEnv.id);
+      await closeTunnel(prevEnv);
+    }
+
+    // If we have a new active environment, open its tunnel
+    if (environmentId && environmentId !== prevEnv?.id) {
       const newEnv = settings.environments.find(env => env.id === environmentId);
       if (newEnv) {
+        console.log('Opening tunnel for new environment:', newEnv.id);
         await openTunnel(newEnv);
       }
     }
@@ -418,16 +411,7 @@ export function App() {
     setActiveEnvironment(envId === "none" ? undefined : envId);
   };
 
-  // Add cleanup on unmount
-  useEffect(() => {
-    return () => {
-      // Close any active tunnels when component unmounts
-      const activeEnv = getActiveEnvironment();
-      if (activeEnv) {
-        closeTunnel(activeEnv);
-      }
-    };
-  }, []);
+  // Don't close tunnels on unmount - let them persist
 
   // Render current page
   const renderPage = () => {
