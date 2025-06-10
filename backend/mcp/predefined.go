@@ -12,152 +12,68 @@ type PredefinedServer struct {
 
 // GetPredefinedServers returns the list of predefined MCP server configurations
 func GetPredefinedServers() []PredefinedServer {
+	// Note: These are example configurations. The actual MCP servers from Docker Hub
+	// are under the mcp/ namespace (e.g., mcp/server-name:latest)
+	// Users should check https://hub.docker.com/catalogs/mcp for available servers
 	return []PredefinedServer{
 		{
-			ID:          "filesystem-basic",
-			Name:        "Filesystem Access",
-			Description: "Read and write files on the remote host",
+			ID:          "custom-mcp-server",
+			Name:        "Custom MCP Server",
+			Description: "Configure a custom MCP server from Docker Hub catalog",
+			Type:        "custom",
+			Icon:        "settings",
+			Config: MCPConfig{
+				// User should replace with actual MCP server from hub.docker.com/catalogs/mcp
+				Image: "mcp/example-server:latest",
+				Env: map[string]string{
+					"MCP_CONFIG": "custom",
+				},
+			},
+		},
+		{
+			ID:          "filesystem-local",
+			Name:        "Local Filesystem Access",
+			Description: "Access files on the remote host (requires MCP filesystem server)",
 			Type:        "filesystem",
 			Icon:        "folder",
 			Config: MCPConfig{
-				Image: "anthropic/mcp-server-filesystem:latest",
+				// This is a placeholder - actual image should be from mcp/ namespace
+				Image: "mcp/filesystem:latest",
 				Env: map[string]string{
-					"MCP_MODE": "filesystem",
+					"MCP_ROOT_PATH": "/home",
+					"MCP_READ_ONLY": "false",
 				},
-				Filesystem: &FilesystemConfig{
-					RootPath: "/home",
-					ReadOnly: false,
+				Volumes: map[string]string{
+					"/home": "/workspace",
 				},
 			},
 		},
 		{
-			ID:          "filesystem-readonly",
-			Name:        "Filesystem (Read-Only)",
-			Description: "Read-only access to files on the remote host",
-			Type:        "filesystem",
-			Icon:        "folder_open",
-			Config: MCPConfig{
-				Image: "anthropic/mcp-server-filesystem:latest",
-				Env: map[string]string{
-					"MCP_MODE": "filesystem",
-				},
-				Filesystem: &FilesystemConfig{
-					RootPath: "/",
-					ReadOnly: true,
-				},
-			},
-		},
-		{
-			ID:          "docker-management",
-			Name:        "Docker Management",
-			Description: "Manage Docker containers, images, and networks",
+			ID:          "docker-local",
+			Name:        "Docker Access",
+			Description: "Manage Docker on the remote host (requires MCP docker server)",
 			Type:        "docker",
 			Icon:        "docker",
 			Config: MCPConfig{
-				Image: "anthropic/mcp-server-docker:latest",
+				// This is a placeholder - actual image should be from mcp/ namespace
+				Image: "mcp/docker:latest",
 				Env: map[string]string{
-					"MCP_MODE": "docker",
+					"DOCKER_HOST": "unix:///var/run/docker.sock",
 				},
-				Docker: &DockerConfig{
-					SocketPath:  "/var/run/docker.sock",
-					APIVersion:  "1.41",
-					Permissions: "admin",
+				Volumes: map[string]string{
+					"/var/run/docker.sock": "/var/run/docker.sock",
 				},
 			},
 		},
 		{
-			ID:          "shell-bash",
-			Name:        "Shell Access (Bash)",
-			Description: "Execute bash commands on the remote host",
-			Type:        "shell",
-			Icon:        "terminal",
+			ID:          "browse-catalog",
+			Name:        "Browse MCP Catalog",
+			Description: "Visit hub.docker.com/catalogs/mcp to see all available MCP servers",
+			Type:        "info",
+			Icon:        "info",
 			Config: MCPConfig{
-				Image:   "anthropic/mcp-server-shell:latest",
-				Command: []string{"bash"},
-				Env: map[string]string{
-					"MCP_MODE":  "shell",
-					"SHELL":     "/bin/bash",
-				},
-				Shell: &ShellConfig{
-					Shell:      "bash",
-					WorkingDir: "/workspace",
-					BlockedCmds: []string{
-						"rm -rf /*",
-						"dd",
-						"mkfs",
-						"fdisk",
-					},
-				},
-			},
-		},
-		{
-			ID:          "shell-restricted",
-			Name:        "Restricted Shell",
-			Description: "Limited shell access with safety restrictions",
-			Type:        "shell",
-			Icon:        "security",
-			Config: MCPConfig{
-				Image: "anthropic/mcp-server-shell:latest",
-				Env: map[string]string{
-					"MCP_MODE":     "shell",
-					"SHELL":        "/bin/sh",
-					"RESTRICTED":   "true",
-				},
-				Shell: &ShellConfig{
-					Shell:      "sh",
-					WorkingDir: "/workspace",
-					AllowedCmds: []string{
-						"ls", "cat", "grep", "find", "echo",
-						"pwd", "cd", "mkdir", "touch", "cp",
-						"mv", "head", "tail", "less", "more",
-					},
-				},
-			},
-		},
-		{
-			ID:          "git-repository",
-			Name:        "Git Repository Access",
-			Description: "Work with Git repositories on the remote host",
-			Type:        "custom",
-			Icon:        "git",
-			Config: MCPConfig{
-				Image: "anthropic/mcp-server-git:latest",
-				Env: map[string]string{
-					"MCP_MODE": "git",
-				},
-				Custom: &CustomConfig{
-					ExtraVolumes: map[string]string{
-						"/home/git": "/repos",
-					},
-				},
-			},
-		},
-		{
-			ID:          "database-postgres",
-			Name:        "PostgreSQL Database",
-			Description: "Connect to PostgreSQL databases",
-			Type:        "custom",
-			Icon:        "database",
-			Config: MCPConfig{
-				Image: "anthropic/mcp-server-postgres:latest",
-				Env: map[string]string{
-					"MCP_MODE": "postgres",
-					"PGHOST":   "localhost",
-					"PGPORT":   "5432",
-				},
-			},
-		},
-		{
-			ID:          "web-browser",
-			Name:        "Web Browser",
-			Description: "Browse web pages and interact with web applications",
-			Type:        "custom",
-			Icon:        "web",
-			Config: MCPConfig{
-				Image: "anthropic/mcp-server-browser:latest",
-				Env: map[string]string{
-					"MCP_MODE": "browser",
-				},
+				Image: "alpine:latest",
+				Command: []string{"echo", "Visit https://hub.docker.com/catalogs/mcp"},
 			},
 		},
 	}
