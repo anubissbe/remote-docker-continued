@@ -110,8 +110,8 @@ func main() {
 	}
 
 	// Start cleanup routine for idle connections
-	// Check every 5 minutes, timeout after 60 minutes to prevent disconnections during normal use
-	tunnelManager.StartCleanupRoutine(5*time.Minute, 60*time.Minute)
+	// Check every 10 minutes, timeout after 120 minutes to prevent disconnections during normal use
+	tunnelManager.StartCleanupRoutine(10*time.Minute, 120*time.Minute)
 	
 	// Initialize MCP manager with SSH adapter
 	sshAdapter = mcp.NewSSHTunnelAdapter(tunnelManager.ExecuteCommand)
@@ -912,12 +912,14 @@ func (m *SSHTunnelManager) OpenConnection(username, hostname string) error {
 	cmd := exec.Command("ssh",
 		"-M",              // Master mode for connection sharing
 		"-S", controlPath, // Control socket path
-		"-o", "ControlPersist=yes",
-		"-o", "ServerAliveInterval=10",
-		"-o", "ServerAliveCountMax=2",
+		"-o", "ControlPersist=300",      // Keep connection for 5 minutes
+		"-o", "ServerAliveInterval=30",   // Send keepalive every 30 seconds
+		"-o", "ServerAliveCountMax=10",   // Allow 10 failed keepalives before disconnect
+		"-o", "TCPKeepAlive=yes",        // Enable TCP keepalive
 		"-o", "StrictHostKeyChecking=accept-new",
 		"-o", "UserKnownHostsFile=/dev/null",
 		"-o", "BatchMode=yes", // Non-interactive mode
+		"-o", "ExitOnForwardFailure=no", // Don't exit on port forward failures
 		"-N", // Don't execute any command, just forward
 		fmt.Sprintf("%s@%s", username, hostname),
 	)
@@ -933,9 +935,10 @@ func (m *SSHTunnelManager) OpenConnection(username, hostname string) error {
 
 	// Check if connection was successful by running a test command
 	testCmd := exec.Command("ssh",
-		"-o ConnectTimeout=5",
+		"-o", "ConnectTimeout=10",
 		"-S", controlPath,
 		"-o", "StrictHostKeyChecking=no",
+		"-o", "BatchMode=yes",
 		fmt.Sprintf("%s@%s", username, hostname),
 		"echo 'Connection test'",
 	)
@@ -1063,9 +1066,11 @@ func (m *SSHTunnelManager) ExecuteCommand(username, hostname, command string) ([
 
 	// Execute command using the control socket
 	cmd := exec.Command("ssh",
-		"-o ConnectTimeout=5",
+		"-o", "ConnectTimeout=10",
+		"-o", "ServerAliveInterval=30",
 		"-S", controlPath,
 		"-o", "StrictHostKeyChecking=no",
+		"-o", "BatchMode=yes",
 		fmt.Sprintf("%s@%s", username, hostname),
 		command,
 	)
@@ -1087,9 +1092,10 @@ func (m *SSHTunnelManager) IsConnectionActive(username, hostname string) bool {
 
 	// Test connection by running a simple command
 	testCmd := exec.Command("ssh",
-		"-o ConnectTimeout=5",
+		"-o", "ConnectTimeout=5",
 		"-S", conn.ControlPath,
 		"-o", "StrictHostKeyChecking=no",
+		"-o", "BatchMode=yes",
 		fmt.Sprintf("%s@%s", username, hostname),
 		"echo 'Connection test'",
 	)

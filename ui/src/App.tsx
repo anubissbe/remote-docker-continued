@@ -119,38 +119,35 @@ export function App() {
     loadSettings();
   }, []);
 
-  // Set up visibility detection - but don't disconnect on tab switch
+  // Set up periodic connection health checks instead of visibility detection
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      const isVisible = document.visibilityState === 'visible';
-      visibilityRef.current = isVisible;
+    let healthCheckInterval: NodeJS.Timeout;
 
-      console.log('Visibility changed:', isVisible);
-
-      // Only reconnect if we've been away for a while and tunnel is actually closed
-      if (isVisible && settings.activeEnvironmentId) {
-        const env = getActiveEnvironment();
-        if (env) {
-          // Small delay to allow Docker Desktop to stabilize
-          setTimeout(() => {
-            checkTunnelStatus(env).then((isConnected) => {
-              console.log('Tunnel status check:', isConnected);
-              if (!isConnected) {
-                console.log('Tunnel was closed, reconnecting...');
-                checkAndOpenTunnel(env);
-              }
-            });
-          }, 1000);
-        }
+    if (settings.activeEnvironmentId) {
+      const env = getActiveEnvironment();
+      if (env) {
+        // Check connection health every 30 seconds
+        healthCheckInterval = setInterval(async () => {
+          try {
+            const isConnected = await checkTunnelStatus(env);
+            console.log('Periodic health check - tunnel active:', isConnected);
+            
+            // Only reconnect if we're supposed to have a connection but don't
+            if (!isConnected && settings.activeEnvironmentId === env.id) {
+              console.log('Health check failed - reconnecting...');
+              await checkAndOpenTunnel(env);
+            }
+          } catch (error) {
+            console.error('Health check error:', error);
+          }
+        }, 30000); // 30 seconds
       }
-    };
-
-    // Only listen for visibility changes, not tab switches within Docker Desktop
-    // This prevents disconnection when switching between Docker Desktop tabs
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (healthCheckInterval) {
+        clearInterval(healthCheckInterval);
+      }
     };
   }, [settings.activeEnvironmentId]);
 
