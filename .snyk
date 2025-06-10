@@ -1,0 +1,12 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JS-INFLIGHT-6095116:
+    - jest > @jest/core > @jest/reporters > @jest/transform > babel-plugin-istanbul > test-exclude > glob > inflight:
+        reason: No fix available - transitive dependency through Jest. Only affects dev environment.
+        expires: '2025-01-10T00:00:00.000Z'
+    - '*':
+        reason: inflight is a dev-only transitive dependency with no available fix
+        expires: '2025-01-10T00:00:00.000Z'
+patch: {}

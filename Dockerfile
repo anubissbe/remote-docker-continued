@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24-alpine3.21 AS builder
 ENV CGO_ENABLED=0
 WORKDIR /backend
 COPY backend/go.* .
@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -trimpath -ldflags="-s -w" -o bin/service
 
-FROM --platform=$BUILDPLATFORM node:22.2-alpine3.18 AS client-builder
+FROM --platform=$BUILDPLATFORM node:22.13-alpine3.21 AS client-builder
 WORKDIR /ui
 # cache packages in layer
 COPY ui/package.json /ui/package.json
@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/usr/src/app/.npm \
 COPY ui /ui
 RUN npm run build
 
-FROM alpine
+FROM alpine:3.21
 LABEL org.opencontainers.image.title="Remote Docker"
 LABEL org.opencontainers.image.description="Manage and monitor remote Docker environments via SSH tunneling.\
     Access containers, images, networks, volumes, logs, and stats with a familiar UI."
