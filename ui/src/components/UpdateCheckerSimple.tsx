@@ -18,7 +18,7 @@ const UpdateCheckerSimple: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   
   // Get current version from package.json
-  const CURRENT_VERSION = '1.0.25';
+  const CURRENT_VERSION = '1.0.26';
   
   const copyUpdateCommand = async () => {
     const command = `docker extension update telkombe/remote-docker:latest`;

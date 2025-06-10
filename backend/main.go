@@ -2119,6 +2119,8 @@ func getMCPCatalog(ctx echo.Context) error {
 
 // Install MCP server from catalog
 func installFromCatalog(ctx echo.Context) error {
+	logger.Info("installFromCatalog called")
+	
 	var req struct {
 		FullName    string `json:"fullName"`    // e.g., "mcp/filesystem:latest"
 		Name        string `json:"name"`        // User-friendly name
@@ -2128,10 +2130,15 @@ func installFromCatalog(ctx echo.Context) error {
 	}
 	
 	if err := ctx.Bind(&req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request format"})
+		logger.Errorf("Failed to bind request: %v", err)
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request format: " + err.Error()})
 	}
 	
+	logger.Infof("Install request: fullName=%s, name=%s, username=%s, hostname=%s, autoStart=%v", 
+		req.FullName, req.Name, req.Username, req.Hostname, req.AutoStart)
+	
 	if req.FullName == "" || req.Name == "" || req.Username == "" || req.Hostname == "" {
+		logger.Error("Missing required fields in install request")
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 	
@@ -2166,6 +2173,16 @@ func installFromCatalog(ctx echo.Context) error {
 		Name:   req.Name,
 		Type:   serverType,
 		Config: *config,
+	}
+	
+	logger.Infof("Creating MCP server: name=%s, type=%s, image=%s", mcpReq.Name, mcpReq.Type, config.Image)
+	
+	// Check if mcpManager is initialized
+	if mcpManager == nil {
+		logger.Error("mcpManager is nil!")
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "MCP manager not initialized",
+		})
 	}
 	
 	// Create the server
