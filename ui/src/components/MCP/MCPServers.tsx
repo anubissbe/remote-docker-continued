@@ -74,14 +74,63 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
   // Load predefined server configurations
   const loadPredefinedServers = async () => {
     try {
+      console.log('Loading predefined MCP servers...');
       const response = await ddClient.extension?.vm?.service?.get('/mcp/predefined');
-      if (Array.isArray(response)) {
+      console.log('Predefined servers response:', response);
+      
+      if (response && Array.isArray(response)) {
         setPredefinedServers(response);
+        console.log('Set predefined servers:', response);
+      } else if (response && typeof response === 'object' && 'servers' in response) {
+        // Handle case where response might be wrapped in an object
+        setPredefinedServers((response as any).servers || []);
+        console.log('Set predefined servers from wrapped response:', (response as any).servers);
       } else {
+        console.warn('Invalid predefined servers response format:', response);
         setPredefinedServers([]);
       }
     } catch (err) {
       console.error('Error loading predefined servers:', err);
+      // Set some default servers if the API fails
+      setPredefinedServers([
+        {
+          id: 'filesystem-basic',
+          name: 'Filesystem Access',
+          description: 'Read and write files on the remote host',
+          type: 'filesystem',
+          config: {
+            image: 'anthropic/mcp-server-filesystem:latest',
+            env: {
+              MCP_MODE: 'filesystem',
+            },
+          },
+        },
+        {
+          id: 'docker-management',
+          name: 'Docker Management',
+          description: 'Manage Docker containers, images, and networks',
+          type: 'docker',
+          config: {
+            image: 'anthropic/mcp-server-docker:latest',
+            env: {
+              MCP_MODE: 'docker',
+            },
+          },
+        },
+        {
+          id: 'shell-bash',
+          name: 'Shell Access (Bash)',
+          description: 'Execute bash commands on the remote host',
+          type: 'shell',
+          config: {
+            image: 'anthropic/mcp-server-shell:latest',
+            env: {
+              MCP_MODE: 'shell',
+              SHELL: '/bin/bash',
+            },
+          },
+        },
+      ]);
     }
   };
 
@@ -222,7 +271,13 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
+            onClick={() => {
+              setCreateDialogOpen(true);
+              // Reload predefined servers when opening dialog
+              if (predefinedServers.length === 0) {
+                loadPredefinedServers();
+              }
+            }}
             disabled={loading}
           >
             New Server
@@ -248,7 +303,13 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           <Button
             variant="outlined"
             startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
+            onClick={() => {
+              setCreateDialogOpen(true);
+              // Reload predefined servers when opening dialog
+              if (predefinedServers.length === 0) {
+                loadPredefinedServers();
+              }
+            }}
             sx={{ mt: 2 }}
           >
             Create your first MCP server
@@ -316,29 +377,45 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
         <DialogTitle>Create MCP Server</DialogTitle>
         <DialogContent>
           {!selectedPredefined ? (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              {predefinedServers.map((server) => (
-                <Grid item xs={12} sm={6} key={server.id}>
-                  <Card
-                    sx={{
-                      cursor: 'pointer',
-                      '&:hover': { bgcolor: 'action.hover' },
-                    }}
-                    onClick={() => setSelectedPredefined(server)}
-                  >
-                    <CardContent>
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-                        {getServerIcon(server.type)}
-                        <Typography variant="h6">{server.name}</Typography>
-                      </Stack>
-                      <Typography variant="body2" color="textSecondary">
-                        {server.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+            predefinedServers.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1" color="textSecondary" gutterBottom>
+                  Loading available MCP server types...
+                </Typography>
+                <CircularProgress sx={{ mt: 2 }} />
+                <Button 
+                  onClick={loadPredefinedServers} 
+                  sx={{ mt: 2 }}
+                  variant="outlined"
+                >
+                  Retry Loading
+                </Button>
+              </Box>
+            ) : (
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                {predefinedServers.map((server) => (
+                  <Grid item xs={12} sm={6} key={server.id}>
+                    <Card
+                      sx={{
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: 'action.hover' },
+                      }}
+                      onClick={() => setSelectedPredefined(server)}
+                    >
+                      <CardContent>
+                        <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                          {getServerIcon(server.type)}
+                          <Typography variant="h6">{server.name}</Typography>
+                        </Stack>
+                        <Typography variant="body2" color="textSecondary">
+                          {server.description}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )
           ) : (
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Alert severity="info">
