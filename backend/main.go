@@ -86,6 +86,20 @@ func main() {
 
 	logger.SetOutput(os.Stdout)
 
+	// Ensure settings directory exists with proper permissions
+	settingsDir := filepath.Dir(settingsFilePath)
+	if err := os.MkdirAll(settingsDir, 0755); err != nil {
+		logger.Warnf("Failed to create settings directory: %v", err)
+	}
+	
+	// Log settings file location for debugging
+	logger.Infof("Settings file location: %s", settingsFilePath)
+	if _, err := os.Stat(settingsFilePath); err == nil {
+		logger.Infof("Settings file exists")
+	} else {
+		logger.Infof("Settings file does not exist yet")
+	}
+
 	// Initialize SSH tunnel manager
 	var err error
 	tunnelManager, err = NewSSHTunnelManager()
@@ -93,8 +107,9 @@ func main() {
 		logger.Fatalf("Failed to initialize SSH tunnel manager: %v", err)
 	}
 
-	// Start cleanup routine for idle connections (check every minute, timeout after 30 minutes)
-	tunnelManager.StartCleanupRoutine(1*time.Minute, 10*time.Minute)
+	// Start cleanup routine for idle connections
+	// Check every 5 minutes, timeout after 60 minutes to prevent disconnections during normal use
+	tunnelManager.StartCleanupRoutine(5*time.Minute, 60*time.Minute)
 	
 	// Initialize MCP manager with SSH adapter
 	sshAdapter = mcp.NewSSHTunnelAdapter(tunnelManager.ExecuteCommand)

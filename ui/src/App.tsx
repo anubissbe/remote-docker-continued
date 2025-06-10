@@ -119,21 +119,29 @@ export function App() {
     loadSettings();
   }, []);
 
-  // Set up visibility detection
+  // Set up visibility detection - but don't disconnect on tab switch
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === 'visible';
       visibilityRef.current = isVisible;
 
-      // If we return to the extension and have an active environment, ensure tunnel is open
+      // Only reconnect if we've been away for a while and tunnel is actually closed
       if (isVisible && settings.activeEnvironmentId && settings.autoConnect) {
         const env = getActiveEnvironment();
-        if (env && settings.autoConnect) {
-          checkAndOpenTunnel(env);
+        if (env) {
+          // Check tunnel status first before trying to reconnect
+          checkTunnelStatus(env).then((isConnected) => {
+            if (!isConnected && settings.autoConnect) {
+              console.log('Tunnel was closed, reconnecting...');
+              checkAndOpenTunnel(env);
+            }
+          });
         }
       }
     };
 
+    // Only listen for visibility changes, not tab switches within Docker Desktop
+    // This prevents disconnection when switching between Docker Desktop tabs
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
@@ -344,19 +352,23 @@ export function App() {
     active: string | boolean;
   }
 
-  const checkTunnelStatus = async (env: Environment) => {
-    if (!env) return;
+  const checkTunnelStatus = async (env: Environment): Promise<boolean> => {
+    if (!env) return false;
 
     try {
       const response = await ddClient.extension.vm?.service?.get(`/tunnel/status?username=${env.username}&hostname=${env.hostname}`);
 
       if (response && typeof response === 'object') {
         const typedResponse = response as TunnelStatusResponse;
-        setIsTunnelActive(typedResponse.active === true);
+        const isActive = typedResponse.active === true;
+        setIsTunnelActive(isActive);
+        return isActive;
       }
+      return false;
     } catch (err: any) {
       console.error('Failed to check SSH tunnel status:', err);
       setIsTunnelActive(false);
+      return false;
     }
   };
 

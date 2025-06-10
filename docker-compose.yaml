@@ -4,8 +4,8 @@ services:
     volumes:
       # Mount SSH configuration from the host (user's machine) to a temp location
       - ~/.ssh:/root/.ssh-host:ro
-      # Plugin data
-      - "remote-docker:/root/docker-extension/"
+      # Plugin data with better persistence
+      - "remote-docker-settings:/root/docker-extension/"
 
 volumes:
-  remote-docker:
+  remote-docker-settings:
