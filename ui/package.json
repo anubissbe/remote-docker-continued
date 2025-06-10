@@ -1,6 +1,6 @@
 {
   "name": "remote-docker-ui",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "Frontend for Remote Docker Desktop Extension",
   "repository": {
     "type": "git",

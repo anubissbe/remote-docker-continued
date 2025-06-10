@@ -36,6 +36,9 @@ func NewManager(sshMgr SSHManager, logger *logrus.Logger) *Manager {
 
 // CreateServer creates a new MCP server on the remote host
 func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPServer, error) {
+	// Get the next available port BEFORE acquiring the lock to avoid deadlock
+	nextPort := m.getNextAvailablePort()
+	
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	
@@ -48,7 +51,7 @@ func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPS
 		Name:      req.Name,
 		Type:      req.Type,
 		Status:    "creating",
-		Port:      m.getNextAvailablePort(),
+		Port:      nextPort,
 		CreatedAt: time.Now(),
 		Config:    req.Config,
 	}
