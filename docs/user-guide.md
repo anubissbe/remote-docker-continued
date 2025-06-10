@@ -63,21 +63,34 @@ The Networks tab provides:
 
 The MCP Servers tab allows you to run Model Context Protocol servers on remote Docker hosts, enabling AI assistants to interact with your remote systems.
 
-#### Creating an MCP Server
+#### Installing from the MCP Catalog (v1.0.15+)
 
 1. Navigate to the "MCP Servers" tab
-2. Click "New Server"
-3. Choose from pre-configured templates:
+2. Click the "Browse Catalog" tab
+3. Browse or search for MCP servers:
+   - Use the search bar to find servers by name or description
+   - Filter by category (storage, docker, shell, kubernetes, etc.)
+   - View download counts and ratings
+4. Click "Install" on any server
+5. Optionally provide a custom name
+6. Click "Install & Start" to deploy
+
+#### Creating an MCP Server Manually
+
+1. Navigate to the "MCP Servers" tab
+2. Stay on the "Installed Servers" tab
+3. Click "New Server"
+4. Choose from pre-configured templates:
    - **Filesystem Access**: Browse and edit files on the remote host
-   - **Filesystem (Read-Only)**: Safe read-only file access
    - **Docker Management**: Control Docker via MCP
    - **Shell Access**: Execute bash commands
-   - **Restricted Shell**: Limited command execution for safety
+   - **Kubernetes**: Manage K8s clusters
+   - **Database Access**: PostgreSQL, MySQL, MongoDB
    - **Git Repository**: Work with Git repos
-   - **PostgreSQL Database**: Database access
-   - **Web Browser**: Web interaction capabilities
-4. Optionally customize the server name
-5. Click "Create" to deploy the server
+   - **Monitoring**: System metrics and logs
+   - **AI/LLM Integration**: Connect to AI models
+5. Optionally customize the server name
+6. Click "Create" to deploy the server
 
 #### Managing MCP Servers
 

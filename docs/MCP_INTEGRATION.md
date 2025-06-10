@@ -40,12 +40,36 @@ Docker Desktop Extension
         └── Tool Containers
 ```
 
+## MCP Catalog Browser (v1.0.15+)
+
+The extension now includes a built-in MCP catalog browser that allows users to discover and install MCP servers with a single click.
+
+### Features
+
+- **Browse Catalog**: Explore 8+ MCP server types with descriptions and metadata
+- **Search & Filter**: Find servers by name, description, or category
+- **One-Click Install**: Install any server directly from the catalog
+- **Auto-Configuration**: Smart configuration based on server type
+- **Real-time Metrics**: View download counts, star ratings, and tags
+
+### Available Categories
+
+- **Storage**: Filesystem access, volume management
+- **Docker**: Container and image management
+- **Shell**: Command execution environments
+- **Kubernetes**: K8s cluster management
+- **Database**: PostgreSQL, MySQL, MongoDB connectors
+- **Git**: Repository operations
+- **Monitoring**: Metrics and observability
+- **AI/LLM**: AI model integrations
+
 ## MCP Server Types
 
 1. **Filesystem MCP Server**
    - Access remote filesystem
    - File operations (read, write, list)
    - Directory navigation
+   - Configurable root path and permissions
 
 2. **Docker MCP Server**
    - Container management
@@ -79,24 +103,39 @@ Docker Desktop Extension
    - Read-only mode support
    - Audit logging
 
-## Implementation Plan
+## Using the MCP Catalog
 
-### Phase 1: Core Infrastructure
-- [ ] MCP server container definition
-- [ ] Basic SSH tunnel for MCP
-- [ ] Server lifecycle management
+### Installing from Catalog
 
-### Phase 2: UI Integration
-- [ ] MCP server selection UI
-- [ ] Configuration interface
-- [ ] Status monitoring
+1. Navigate to the **MCP Servers** page
+2. Click the **Browse Catalog** tab
+3. Search or filter to find desired servers
+4. Click **Install** on any server
+5. (Optional) Provide a custom name
+6. Click **Install & Start**
 
-### Phase 3: Tool Integration
-- [ ] Filesystem tools
-- [ ] Docker tools
-- [ ] Shell access
+### Managing Installed Servers
 
-### Phase 4: Advanced Features
-- [ ] Custom server support
-- [ ] Multi-server management
-- [ ] Performance optimization
+1. Switch to the **Installed Servers** tab
+2. View all running MCP servers
+3. Start/Stop servers with one click
+4. Delete servers when no longer needed
+
+## Implementation Status
+
+### ✅ Completed Features
+- MCP server container definition
+- SSH tunnel management for MCP
+- Server lifecycle management (create, start, stop, delete)
+- MCP server selection UI with catalog browser
+- Configuration interface with auto-configuration
+- Real-time status monitoring
+- Filesystem, Docker, and Shell server support
+- Multi-server management
+- One-click installation from catalog
+
+### 🚧 Planned Features
+- Real Docker Hub MCP catalog API integration
+- Custom server template creation
+- Advanced permission management
+- Performance monitoring dashboard

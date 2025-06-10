@@ -7,23 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.15] - 2025-06-10
+
+### Added
+- MCP Catalog Browser with tab-based UI
+  - Browse available MCP servers from Docker Hub catalog
+  - Search servers by name and description
+  - Filter by categories (storage, docker, shell, kubernetes, etc.)
+  - One-click installation with auto-start capability
+  - Real-time metrics showing download counts and ratings
+  - Pagination support for large catalogs
+  - Smart auto-configuration based on server type
+
+### Changed
+- Updated MCPServers component to use tabbed interface
+- Added "Installed Servers" and "Browse Catalog" tabs
+- Enhanced README with MCP catalog features
+
+### Fixed
+- Added missing `volumes` field to MCPConfig for proper volume mounting
+
+## [1.0.14] - 2025-06-10
+
+### Fixed
+- Updated MCP server configurations to match Docker Hub catalog structure
+- Changed to correct mcp/ namespace for all predefined servers
+- Added catalog browsing reference link
+
+## [1.0.13] - 2025-06-10
+
+### Fixed
+- Increased SSH idle timeout from 10 to 60 minutes
+- Improved SSH connection stability to prevent disconnections
+- Added tunnel status checking before attempting reconnection
+- Enhanced settings persistence logging
+
+## [1.0.12] - 2025-06-10
+
+### Fixed
+- Fixed settings persistence issue across extension reinstalls
+- Resolved SSH disconnection when switching Docker Desktop tabs
+- Improved MCP server loading with better error handling
+- Added comprehensive debugging for MCP server initialization
+
+## [1.0.11] - 2025-06-10
+
 ### Added
 - MCP (Model Context Protocol) Toolkit Integration
   - New MCP Servers tab in the UI for managing MCP servers on remote hosts
-  - Pre-configured MCP server templates (Filesystem, Docker, Shell, Git, Database, Web)
+  - Pre-configured MCP server templates (Filesystem, Docker, Shell)
   - Backend API endpoints for MCP server lifecycle management
   - SSH adapter for executing MCP operations on remote hosts
   - Comprehensive type definitions for MCP entities
   - Real-time server status monitoring
   - Secure SSH tunneling for MCP connections
   - Container-based isolation for each MCP server
-  - Architecture documentation for MCP integration
 
-### Changed
-- Updated README with MCP feature documentation
-- Enhanced user guide with MCP usage instructions
-- Extended API reference with MCP endpoints
-- Updated development guide with MCP component information
+### Fixed
+- Resolved Jest security vulnerability by updating to v30.0.0
+- Updated Node.js to 22.13 and Go to 1.24.0
+- Improved TypeScript type definitions
 
 ## [1.0.10] - 2025-06-09
 

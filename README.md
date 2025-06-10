@@ -98,9 +98,11 @@
 - Volumes: browse, inspect, cleanup
 
 🤖 **MCP Toolkit Integration**
-- Run MCP servers on remote hosts
+- Browse and install from MCP catalog
+- One-click installation with auto-start
 - Pre-configured server templates
 - Filesystem, Docker, Shell access
+- Search and filter MCP servers
 - Secure SSH tunneling for MCP
 
 🔄 **Smart Auto-refresh**
@@ -230,21 +232,33 @@ C:\Users\<username>\.ssh\id_rsa.pub
 ### MCP Toolkit Integration
 The extension now supports running MCP (Model Context Protocol) servers on remote Docker hosts, enabling AI assistants to interact with remote systems securely.
 
+#### 🆕 MCP Catalog Browser (v1.0.15+)
+- **Browse Available Servers**: Explore the MCP catalog with 8+ server types
+- **Search & Filter**: Find servers by name, description, or category
+- **One-Click Install**: Install any MCP server with a single click
+- **Auto-Configuration**: Smart configuration based on server type
+- **Real-time Metrics**: See download counts and ratings
+- **Categories**: Browse by storage, docker, shell, kubernetes, database, git, monitoring, AI/LLM
+
 #### Available MCP Server Types
 - **Filesystem Access**: Read/write or read-only access to remote files
 - **Docker Management**: Control containers, images, and networks via MCP
 - **Shell Access**: Execute commands with configurable restrictions
+- **Kubernetes**: Manage Kubernetes clusters and resources
+- **Database Access**: Connect to PostgreSQL, MySQL, MongoDB
 - **Git Repository**: Work with Git repositories on remote hosts
-- **Database Access**: Connect to PostgreSQL databases
-- **Web Browser**: Browse and interact with web applications
+- **Monitoring**: System metrics, logs, and alerts
+- **AI/LLM Integration**: Connect to Claude, GPT, and local models
 
 #### MCP Features
+- Browse and install from the MCP catalog
 - Pre-configured server templates for quick deployment
 - One-click server creation and management
 - Secure SSH tunneling for all MCP connections
 - Real-time server status monitoring
 - Automatic port assignment and management
 - Container-based isolation for each MCP server
+- Custom naming for installed servers
 
 ## Configuration
 
