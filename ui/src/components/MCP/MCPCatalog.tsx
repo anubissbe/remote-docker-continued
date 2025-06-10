@@ -218,6 +218,19 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       const response = await ddClient.extension?.vm?.service?.post('/mcp/catalog/install', request);
       console.log('Install response:', response);
       
+      // Check if response indicates success
+      if (!response) {
+        throw new Error('No response from install endpoint');
+      }
+      
+      // Handle wrapped response
+      let actualResponse: any = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        actualResponse = (response as any).data;
+      }
+      
+      console.log('Actual response:', actualResponse);
+      
       ddClient.desktopUI?.toast?.success(`Installing ${selectedItem.name}...`);
       
       // Close dialog and notify parent
@@ -361,6 +374,8 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
                     <Button
                       size="small"
                       onClick={() => {
+                        console.log('Opening install dialog for:', item.name);
+                        console.log('Item full_name:', item.full_name);
                         setSelectedItem(item);
                         setInstallDialogOpen(true);
                       }}
