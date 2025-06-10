@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
@@ -26,6 +27,7 @@ import { Environment, ExtensionSettings } from '../../App';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import UpdateChecker from '../../components/UpdateChecker';
 
 interface EnvironmentsProps {
   settings: ExtensionSettings;
@@ -270,6 +272,14 @@ const Environments: React.FC<EnvironmentsProps> = ({
             Save Settings
           </Button>
         </Stack>
+      </Paper>
+
+      {/* Update Checker */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Extension Updates
+        </Typography>
+        <UpdateChecker />
       </Paper>
 
       {/* Environment List */}
