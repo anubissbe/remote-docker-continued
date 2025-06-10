@@ -304,7 +304,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">MCP Servers</Typography>
         <Stack direction="row" spacing={1}>

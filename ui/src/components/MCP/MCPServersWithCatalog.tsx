@@ -62,11 +62,7 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        MCP Servers
-      </Typography>
-      
-      <Paper sx={{ width: '100%', mb: 3 }}>
+      <Paper sx={{ bgcolor: 'background.paper', borderRadius: 1, overflow: 'hidden' }}>
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -95,18 +91,20 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
             aria-controls="mcp-tabpanel-1"
           />
         </Tabs>
+        
+        <Box sx={{ p: 2 }}>
+          <TabPanel value={tabValue} index={0}>
+            <MCPServers currentEnv={currentEnv} />
+          </TabPanel>
+          
+          <TabPanel value={tabValue} index={1}>
+            <MCPCatalog 
+              currentEnv={currentEnv} 
+              onInstallComplete={handleInstallComplete}
+            />
+          </TabPanel>
+        </Box>
       </Paper>
-
-      <TabPanel value={tabValue} index={0}>
-        <MCPServers currentEnv={currentEnv} />
-      </TabPanel>
-      
-      <TabPanel value={tabValue} index={1}>
-        <MCPCatalog 
-          currentEnv={currentEnv} 
-          onInstallComplete={handleInstallComplete}
-        />
-      </TabPanel>
     </Box>
   );
 };

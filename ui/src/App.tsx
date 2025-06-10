@@ -546,14 +546,13 @@ export function App() {
         sx={{
           width: `calc(100% - ${drawerWidth}px)`,
           ml: `${drawerWidth}px`,
-          bgcolor: 'inherit',
+          bgcolor: 'background.paper',
           color: 'text.primary',
           boxShadow: 'none',
           borderBottom: 1,
           borderColor: 'divider',
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          transition: 'background-color 0.2s ease',
-          filter: isLogsOpen ? 'brightness(0.97)' : 'none'
+          transition: 'background-color 0.2s ease'
         }}
       >
         <Toolbar sx={{
@@ -684,8 +683,7 @@ export function App() {
             boxSizing: 'border-box',
             borderRight: 1,
             borderColor: 'divider',
-            bgcolor: isLogsOpen ? 'rgba(0, 0, 0, 0.04)' : 'inherit',
-            filter: isLogsOpen ? 'brightness(0.97)' : 'none',
+            bgcolor: 'background.paper',
             transition: 'background-color 0.2s ease'
           },
         }}
@@ -787,8 +785,7 @@ export function App() {
           p: 3,
           mt: '56px', // Matches the toolbar height
           overflow: 'auto',
-          bgcolor: isLogsOpen ? 'rgba(0, 0, 0, 0.04)' : 'inherit',
-          filter: isLogsOpen ? 'brightness(0.97)' : 'none',
+          bgcolor: 'background.default',
           transition: 'background-color 0.2s ease'
         }}
       >
