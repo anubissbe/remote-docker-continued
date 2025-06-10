@@ -40,7 +40,7 @@ import Images from './pages/docker/Images';
 import Volumes from './pages/docker/Volumes';
 import Networks from './pages/docker/Networks';
 import Environments from './pages/settings/Environments';
-import MCPServers from './components/MCP/MCPServers';
+import MCPServersWithCatalog from './components/MCP/MCPServersWithCatalog';
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 const client = createDockerDesktopClient();
@@ -492,7 +492,7 @@ export function App() {
         );
       case 'mcp':
         return (
-          <MCPServers
+          <MCPServersWithCatalog
             currentEnv={activeEnvironment}
           />
         );

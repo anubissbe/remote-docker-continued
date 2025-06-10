@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -27,6 +28,7 @@ var (
 	tunnelManager *SSHTunnelManager
 	mcpManager    *mcp.Manager
 	sshAdapter    *mcp.SSHTunnelAdapter
+	catalogService *mcp.MCPCatalogService
 )
 
 // SSH tunnel manager that maintains persistent connections
@@ -114,6 +116,9 @@ func main() {
 	// Initialize MCP manager with SSH adapter
 	sshAdapter = mcp.NewSSHTunnelAdapter(tunnelManager.ExecuteCommand)
 	mcpManager = mcp.NewManager(sshAdapter, logger)
+	
+	// Initialize catalog service
+	catalogService = mcp.NewCatalogService()
 
 	logMiddleware := middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Skipper: middleware.DefaultSkipper,
@@ -174,6 +179,8 @@ func main() {
 	
 	// MCP endpoints
 	router.GET("/mcp/predefined", getPredefinedMCPServers)
+	router.GET("/mcp/catalog", getMCPCatalog)
+	router.POST("/mcp/catalog/install", installFromCatalog)
 	router.POST("/mcp/servers", createMCPServer)
 	router.GET("/mcp/servers", listMCPServers)
 	router.GET("/mcp/servers/:id", getMCPServer)
@@ -2048,5 +2055,106 @@ func getMCPServerLogs(ctx echo.Context) error {
 	
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
 		"logs": logs,
+	})
+}
+
+// Get MCP catalog
+func getMCPCatalog(ctx echo.Context) error {
+	// Get query parameters
+	page := 1
+	if pageParam := ctx.QueryParam("page"); pageParam != "" {
+		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
+			page = p
+		}
+	}
+	
+	search := ctx.QueryParam("search")
+	category := ctx.QueryParam("category")
+	
+	// Fetch catalog
+	catalog, err := catalogService.GetCatalog(page, search, category)
+	if err != nil {
+		logger.Errorf("Failed to get MCP catalog: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to fetch catalog: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, catalog)
+}
+
+// Install MCP server from catalog
+func installFromCatalog(ctx echo.Context) error {
+	var req struct {
+		FullName    string `json:"fullName"`    // e.g., "mcp/filesystem:latest"
+		Name        string `json:"name"`        // User-friendly name
+		Username    string `json:"username"`
+		Hostname    string `json:"hostname"`
+		AutoStart   bool   `json:"autoStart"`
+	}
+	
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request format"})
+	}
+	
+	if req.FullName == "" || req.Name == "" || req.Username == "" || req.Hostname == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Set the current environment for SSH commands
+	sshAdapter.SetCurrentEnvironment(req.Username, req.Hostname)
+	
+	// Get predefined config for this server type
+	config, err := mcp.GetPredefinedConfig(req.FullName)
+	if err != nil {
+		logger.Warnf("No predefined config for %s: %v", req.FullName, err)
+		// Use a basic config
+		config = &mcp.MCPConfig{
+			Image: req.FullName,
+			Env: map[string]string{
+				"MCP_PORT": "9000",
+			},
+		}
+	}
+	
+	// Determine server type from the image name
+	serverType := "custom"
+	if strings.Contains(req.FullName, "/filesystem") {
+		serverType = "filesystem"
+	} else if strings.Contains(req.FullName, "/docker") {
+		serverType = "docker"
+	} else if strings.Contains(req.FullName, "/shell") {
+		serverType = "shell"
+	}
+	
+	// Create the MCP server request
+	mcpReq := mcp.MCPServerRequest{
+		Name:   req.Name,
+		Type:   serverType,
+		Config: *config,
+	}
+	
+	// Create the server
+	server, err := mcpManager.CreateServer(ctx.Request().Context(), mcpReq)
+	if err != nil {
+		logger.Errorf("Failed to create MCP server from catalog: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to create server: %v", err),
+		})
+	}
+	
+	// If autoStart is requested, start the server
+	if req.AutoStart {
+		go func() {
+			time.Sleep(2 * time.Second) // Give it time to initialize
+			if err := mcpManager.StartServer(context.Background(), server.ID); err != nil {
+				logger.Errorf("Failed to auto-start MCP server %s: %v", server.ID, err)
+			}
+		}()
+	}
+	
+	return ctx.JSON(http.StatusCreated, mcp.MCPServerResponse{
+		Server:  server,
+		Message: fmt.Sprintf("MCP server '%s' installation initiated", req.Name),
 	})
 }
