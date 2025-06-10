@@ -98,7 +98,7 @@ export function App() {
   const [isTunnelActive, setIsTunnelActive] = useState(false);
   const [tunnelError, setTunnelError] = useState('');
   const [isTunnelLoading, setIsTunnelLoading] = useState(false);
-  const visibilityRef = useRef(true);
+  const connectionCheckRef = useRef<NodeJS.Timeout | null>(null);
 
   // New state for logs modal context
   const [isLogsOpen, setIsLogsOpen] = useState(false);
@@ -118,6 +118,59 @@ export function App() {
   useEffect(() => {
     loadSettings();
   }, []);
+
+  // Reconnect when extension becomes visible again
+  useEffect(() => {
+    // Function to check and reconnect if needed
+    const checkAndReconnect = () => {
+      if (settings.activeEnvironmentId && !isTunnelActive) {
+        const env = getActiveEnvironment();
+        if (env) {
+          console.log('Extension became visible, reconnecting to:', env.id);
+          checkAndOpenTunnel(env);
+        }
+      }
+    };
+
+    // Check on mount and when settings change
+    checkAndReconnect();
+
+    // Also set up a focus listener for when user returns to the extension
+    const handleFocus = () => {
+      console.log('Extension regained focus');
+      setTimeout(checkAndReconnect, 100); // Small delay to let things stabilize
+    };
+
+    // Set up periodic check when extension is active
+    if (settings.activeEnvironmentId) {
+      // Clear any existing interval
+      if (connectionCheckRef.current) {
+        clearInterval(connectionCheckRef.current);
+      }
+      
+      // Check every 5 seconds if we have an active environment but no tunnel
+      connectionCheckRef.current = setInterval(() => {
+        if (settings.activeEnvironmentId && !isTunnelActive && !isTunnelLoading) {
+          console.log('Periodic check: tunnel not active, attempting reconnect');
+          checkAndReconnect();
+        }
+      }, 5000);
+    }
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        handleFocus();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      if (connectionCheckRef.current) {
+        clearInterval(connectionCheckRef.current);
+      }
+    };
+  }, [settings.activeEnvironmentId, isTunnelActive]);
 
   // Remove automatic health checks that cause disconnections
   // Connection will only be managed manually through user actions
@@ -335,8 +388,24 @@ export function App() {
       const response = await ddClient.extension.vm?.service?.get(`/tunnel/status?username=${env.username}&hostname=${env.hostname}`);
 
       if (response && typeof response === 'object') {
-        const typedResponse = response as TunnelStatusResponse;
-        const isActive = typedResponse.active === true;
+        // Handle wrapped response
+        let actualResponse = response;
+        if ('data' in response && response.data) {
+          actualResponse = response.data;
+        }
+        
+        // Parse if string
+        if (typeof actualResponse === 'string') {
+          try {
+            actualResponse = JSON.parse(actualResponse);
+          } catch (e) {
+            console.error('Failed to parse tunnel status response');
+            return false;
+          }
+        }
+        
+        const typedResponse = actualResponse as TunnelStatusResponse;
+        const isActive = typedResponse.active === true || typedResponse.active === 'true';
         setIsTunnelActive(isActive);
         return isActive;
       }
