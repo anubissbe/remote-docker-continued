@@ -125,17 +125,22 @@ export function App() {
       const isVisible = document.visibilityState === 'visible';
       visibilityRef.current = isVisible;
 
+      console.log('Visibility changed:', isVisible);
+
       // Only reconnect if we've been away for a while and tunnel is actually closed
-      if (isVisible && settings.activeEnvironmentId && settings.autoConnect) {
+      if (isVisible && settings.activeEnvironmentId) {
         const env = getActiveEnvironment();
         if (env) {
-          // Check tunnel status first before trying to reconnect
-          checkTunnelStatus(env).then((isConnected) => {
-            if (!isConnected && settings.autoConnect) {
-              console.log('Tunnel was closed, reconnecting...');
-              checkAndOpenTunnel(env);
-            }
-          });
+          // Small delay to allow Docker Desktop to stabilize
+          setTimeout(() => {
+            checkTunnelStatus(env).then((isConnected) => {
+              console.log('Tunnel status check:', isConnected);
+              if (!isConnected) {
+                console.log('Tunnel was closed, reconnecting...');
+                checkAndOpenTunnel(env);
+              }
+            });
+          }, 1000);
         }
       }
     };

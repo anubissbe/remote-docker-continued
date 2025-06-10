@@ -192,8 +192,17 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
 
   // Install from catalog
   const handleInstall = async () => {
-    if (!currentEnv || !selectedItem) return;
+    console.log('handleInstall called - button was clicked!');
+    console.log('currentEnv:', currentEnv);
+    console.log('selectedItem:', selectedItem);
+    console.log('installing state:', installing);
     
+    if (!currentEnv || !selectedItem) {
+      console.error('Missing currentEnv or selectedItem:', { currentEnv, selectedItem });
+      return;
+    }
+    
+    console.log('Starting MCP server installation:', selectedItem.name);
     setInstalling(selectedItem.full_name);
     
     try {
@@ -205,7 +214,9 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
         autoStart: true,
       };
       
-      await ddClient.extension?.vm?.service?.post('/mcp/catalog/install', request);
+      console.log('Installing MCP server with request:', request);
+      const response = await ddClient.extension?.vm?.service?.post('/mcp/catalog/install', request);
+      console.log('Install response:', response);
       
       ddClient.desktopUI?.toast?.success(`Installing ${selectedItem.name}...`);
       
@@ -219,7 +230,8 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       }
     } catch (err) {
       console.error('Error installing MCP server:', err);
-      ddClient.desktopUI?.toast?.error('Failed to install MCP server');
+      console.error('Error details:', err instanceof Error ? err.message : String(err));
+      ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setInstalling(null);
     }
@@ -425,7 +437,13 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
             Cancel
           </Button>
           <Button
-            onClick={handleInstall}
+            onClick={() => {
+              console.log('Install & Start button clicked!');
+              console.log('Button disabled state:', !selectedItem || installing !== null);
+              console.log('selectedItem exists:', !!selectedItem);
+              console.log('installing state:', installing);
+              handleInstall();
+            }}
             variant="contained"
             disabled={!selectedItem || installing !== null}
           >
