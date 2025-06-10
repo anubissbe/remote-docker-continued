@@ -1848,6 +1848,11 @@ type HTTPMessageBody struct {
 // Get predefined MCP server configurations
 func getPredefinedMCPServers(ctx echo.Context) error {
 	servers := mcp.GetPredefinedServers()
+	logger.Infof("Returning %d predefined MCP servers", len(servers))
+	// Log the first server for debugging
+	if len(servers) > 0 {
+		logger.Debugf("First server: %+v", servers[0])
+	}
 	return ctx.JSON(http.StatusOK, servers)
 }
 

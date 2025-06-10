@@ -75,22 +75,62 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
   const loadPredefinedServers = async () => {
     try {
       console.log('Loading predefined MCP servers...');
-      const response = await ddClient.extension?.vm?.service?.get('/mcp/predefined');
-      console.log('Predefined servers response:', response);
       
-      if (response && Array.isArray(response)) {
-        setPredefinedServers(response);
-        console.log('Set predefined servers:', response);
-      } else if (response && typeof response === 'object' && 'servers' in response) {
-        // Handle case where response might be wrapped in an object
-        setPredefinedServers((response as any).servers || []);
-        console.log('Set predefined servers from wrapped response:', (response as any).servers);
+      // Check if ddClient is properly initialized
+      if (!ddClient || !ddClient.extension || !ddClient.extension.vm || !ddClient.extension.vm.service) {
+        console.error('Docker Desktop client not properly initialized');
+        throw new Error('Docker Desktop client not available');
+      }
+      
+      const response = await ddClient.extension.vm.service.get('/mcp/predefined');
+      console.log('Predefined servers raw response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array?', Array.isArray(response));
+      
+      // The Docker Desktop API might return the response in different formats
+      let servers = [];
+      
+      if (response === null || response === undefined) {
+        console.warn('Received null/undefined response from API');
+        throw new Error('Empty response from API');
+      } else if (typeof response === 'string') {
+        // Try to parse if it's a JSON string
+        try {
+          servers = JSON.parse(response);
+          console.log('Parsed servers from string:', servers);
+        } catch (parseErr) {
+          console.error('Failed to parse response string:', parseErr);
+          throw new Error('Invalid JSON response');
+        }
+      } else if (Array.isArray(response)) {
+        servers = response;
+        console.log('Direct array response:', servers);
+      } else if (response && typeof response === 'object') {
+        // Check various possible wrapper properties
+        if ('data' in response && Array.isArray(response.data)) {
+          servers = response.data;
+        } else if ('servers' in response && Array.isArray(response.servers)) {
+          servers = response.servers;
+        } else if ('result' in response && Array.isArray(response.result)) {
+          servers = response.result;
+        } else {
+          // If it's an object but not wrapped, convert to array
+          servers = [response];
+        }
+        console.log('Extracted servers from object:', servers);
+      }
+      
+      if (Array.isArray(servers) && servers.length > 0) {
+        setPredefinedServers(servers);
+        console.log('Successfully set predefined servers:', servers);
       } else {
-        console.warn('Invalid predefined servers response format:', response);
-        setPredefinedServers([]);
+        console.warn('No servers found in response, using defaults');
+        throw new Error('No servers in response');
       }
     } catch (err) {
       console.error('Error loading predefined servers:', err);
+      console.error('Error details:', err instanceof Error ? err.message : String(err));
+      
       // Set some default servers if the API fails
       setPredefinedServers([
         {
@@ -271,6 +311,14 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           <IconButton onClick={loadServers} disabled={loading}>
             <RefreshIcon />
           </IconButton>
+          <Button
+            variant="outlined"
+            onClick={loadPredefinedServers}
+            disabled={loading}
+            size="small"
+          >
+            Test Load
+          </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
