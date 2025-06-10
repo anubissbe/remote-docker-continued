@@ -177,6 +177,9 @@ func main() {
 	router.POST("/dashboard/systeminfo", getDashboardSystemInfo)
 	router.POST("/dashboard/events", getDashboardEvents)
 	
+	// Update checker endpoint
+	router.GET("/updates/check", checkForUpdates)
+	
 	// MCP endpoints
 	router.GET("/mcp/predefined", getPredefinedMCPServers)
 	router.GET("/mcp/catalog", getMCPCatalog)
@@ -746,6 +749,31 @@ func getDashboardEvents(ctx echo.Context) error {
 	})
 
 	return ctx.JSON(http.StatusOK, EventsResponse{Events: events})
+}
+
+// Check for updates by proxying to Docker Hub API
+func checkForUpdates(ctx echo.Context) error {
+	// Proxy request to Docker Hub to avoid CORS issues
+	resp, err := http.Get("https://hub.docker.com/v2/repositories/telkombe/remote-docker/tags/?page_size=50&ordering=-last_updated")
+	if err != nil {
+		logger.Errorf("Failed to check Docker Hub for updates: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to check for updates",
+		})
+	}
+	defer resp.Body.Close()
+	
+	// Read response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.Errorf("Failed to read Docker Hub response: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to read update information",
+		})
+	}
+	
+	// Return the raw response from Docker Hub
+	return ctx.String(http.StatusOK, string(body))
 }
 
 // Request for container logs

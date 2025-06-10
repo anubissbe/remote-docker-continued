@@ -49,15 +49,35 @@ const UpdateChecker: React.FC = () => {
     
     try {
       // Check Docker Hub for latest version
-      const response = await fetch('https://hub.docker.com/v2/repositories/telkombe/remote-docker/tags/?page_size=10&ordering=-last_updated');
-      const data = await response.json();
+      // Use backend proxy to avoid CORS issues
+      const response = await ddClient.extension?.vm?.service?.get('/updates/check');
       
-      if (!data.results || data.results.length === 0) {
+      console.log('Update check response:', response);
+      
+      // Handle wrapped response
+      let data = response;
+      if (response && typeof response === 'object' && 'data' in response) {
+        data = response.data;
+      }
+      
+      // Parse if string
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          throw new Error('Invalid response format');
+        }
+      }
+      
+      // Type assertion after validation
+      const dockerHubResponse = data as { results?: any[] };
+      
+      if (!dockerHubResponse.results || dockerHubResponse.results.length === 0) {
         throw new Error('No versions found');
       }
       
       // Find the latest version tag (exclude 'latest' and commit hashes)
-      const versionTags = data.results
+      const versionTags = dockerHubResponse.results
         .filter((tag: any) => tag.name.match(/^\d+\.\d+(\.\d+)?$/))
         .sort((a: any, b: any) => {
           // Sort by version number

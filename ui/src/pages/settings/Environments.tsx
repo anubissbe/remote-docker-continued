@@ -27,7 +27,7 @@ import { Environment, ExtensionSettings } from '../../App';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import UpdateChecker from '../../components/UpdateChecker';
+import UpdateCheckerSimple from '../../components/UpdateCheckerSimple';
 
 interface EnvironmentsProps {
   settings: ExtensionSettings;
@@ -279,7 +279,7 @@ const Environments: React.FC<EnvironmentsProps> = ({
         <Typography variant="h6" gutterBottom>
           Extension Updates
         </Typography>
-        <UpdateChecker />
+        <UpdateCheckerSimple />
       </Paper>
 
       {/* Environment List */}
