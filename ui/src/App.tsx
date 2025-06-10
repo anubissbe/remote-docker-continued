@@ -386,9 +386,10 @@ export function App() {
 
   // Set active environment and manage the tunnel
   const setActiveEnvironment = async (environmentId: string | undefined) => {
-    // If we had a previous active environment, close its tunnel
     const prevEnv = getActiveEnvironment();
-    if (prevEnv) {
+    
+    // Only close tunnel if switching to a different environment
+    if (prevEnv && prevEnv.id !== environmentId) {
       await closeTunnel(prevEnv);
     }
 
@@ -400,8 +401,8 @@ export function App() {
 
     const success = await saveSettings(newSettings);
 
-    // If we have a new active environment, open its tunnel
-    if (success && environmentId) {
+    // If we have a new active environment and it's different from current, open its tunnel
+    if (success && environmentId && (!prevEnv || prevEnv.id !== environmentId)) {
       const newEnv = settings.environments.find(env => env.id === environmentId);
       if (newEnv) {
         await openTunnel(newEnv);

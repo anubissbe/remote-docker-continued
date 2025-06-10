@@ -103,14 +103,46 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       if (search) params.append('search', search);
       if (category && category !== 'all') params.append('category', category);
       
+      console.log('Loading MCP catalog with params:', params.toString());
       const response = await ddClient.extension?.vm?.service?.get(`/mcp/catalog?${params.toString()}`);
       
+      console.log('MCP catalog raw response:', response);
+      console.log('Response type:', typeof response);
+      
+      // Handle Docker Desktop API response wrapping
+      let catalogData = response;
       if (response && typeof response === 'object') {
-        setCatalog(response as CatalogResponse);
+        // Check if response is wrapped in 'data' property
+        if ('data' in response && response.data) {
+          catalogData = response.data;
+          console.log('Extracted catalog data from wrapper:', catalogData);
+        }
+        
+        // Parse if it's a string
+        if (typeof catalogData === 'string') {
+          try {
+            catalogData = JSON.parse(catalogData);
+            console.log('Parsed catalog data from string:', catalogData);
+          } catch (parseErr) {
+            console.error('Failed to parse catalog response:', parseErr);
+            throw new Error('Invalid JSON response from catalog API');
+          }
+        }
+        
+        // Validate the structure
+        if (catalogData && typeof catalogData === 'object' && 'items' in catalogData) {
+          setCatalog(catalogData as CatalogResponse);
+          console.log('Successfully set catalog with', (catalogData as CatalogResponse).items?.length || 0, 'items');
+        } else {
+          console.error('Invalid catalog response structure:', catalogData);
+          throw new Error('Invalid catalog response structure');
+        }
+      } else {
+        throw new Error('Empty or invalid response from catalog API');
       }
     } catch (err) {
       console.error('Error loading MCP catalog:', err);
-      setError('Failed to load MCP catalog');
+      setError('Failed to load MCP catalog: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
