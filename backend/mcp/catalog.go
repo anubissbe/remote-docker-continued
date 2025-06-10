@@ -95,16 +95,16 @@ func (s *MCPCatalogService) GetCatalog(page int, search string, category string)
 		},
 		{
 			Name:        "shell",
-			Namespace:   "mcp",
-			Description: "MCP server for shell command execution with security controls",
-			Publisher:   "Docker Inc.",
+			Namespace:   "alpine",
+			Description: "Basic shell access server using Alpine Linux with common tools",
+			Publisher:   "Alpine Linux",
 			UpdatedAt:   time.Now().Format(time.RFC3339),
 			PullCount:   5621,
 			StarCount:   45,
-			Tags:        []string{"latest", "1.0.0"},
+			Tags:        []string{"latest", "3.21"},
 			Icon:        "terminal",
 			Categories:  []string{"shell", "automation"},
-			FullName:    "mcp/shell:latest",
+			FullName:    "alpine:3.21",
 			InstallReady: true,
 		},
 		{
@@ -304,6 +304,13 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 				Shell: "bash",
 				WorkingDir: "/workspace",
 			},
+		}, nil
+		
+	case "alpine:3.21":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{},
+			Command: []string{"sleep", "3600"}, // Keep container running
 		}, nil
 		
 	default:

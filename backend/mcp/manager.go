@@ -247,8 +247,10 @@ func (m *Manager) buildDockerCommand(server *MCPServer) string {
 	// Base command
 	cmd := fmt.Sprintf("docker run -d --name %s", server.ID)
 	
-	// Add port mapping
-	cmd += fmt.Sprintf(" -p %d:%d", server.Port, server.Port)
+	// Add port mapping only if environment has MCP_PORT set
+	if _, hasMCPPort := server.Config.Env["MCP_PORT"]; hasMCPPort {
+		cmd += fmt.Sprintf(" -p %d:%d", server.Port, server.Port)
+	}
 	
 	// Add environment variables
 	for k, v := range server.Config.Env {
