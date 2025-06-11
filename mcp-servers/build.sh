@@ -3,6 +3,22 @@
 
 set -e
 
+# Parse command line arguments
+PUSH_TO_HUB=true
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --no-push)
+      PUSH_TO_HUB=false
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--no-push]"
+      exit 1
+      ;;
+  esac
+done
+
 echo "Building MCP server images..."
 
 # Build filesystem server
@@ -19,10 +35,13 @@ docker build -t telkombe/mcp-shell:latest ./shell/
 
 echo "MCP server images built successfully!"
 
-# Push to Docker Hub
-echo "Pushing images to Docker Hub..."
-docker push telkombe/mcp-filesystem:latest
-docker push telkombe/mcp-docker:latest
-docker push telkombe/mcp-shell:latest
-
-echo "MCP server images pushed successfully!"
+# Push to Docker Hub only if not disabled
+if [ "$PUSH_TO_HUB" = true ]; then
+  echo "Pushing images to Docker Hub..."
+  docker push telkombe/mcp-filesystem:latest
+  docker push telkombe/mcp-docker:latest
+  docker push telkombe/mcp-shell:latest
+  echo "MCP server images pushed successfully!"
+else
+  echo "Skipping push to Docker Hub (--no-push flag specified)"
+fi
