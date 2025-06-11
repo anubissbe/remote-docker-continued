@@ -179,44 +179,44 @@ func (s *MCPCatalogService) GetCatalog(page int, search string, category string)
 		},
 		{
 			Name:        "mcp-filesystem",
-			Namespace:   "anubissbe",
+			Namespace:   "telkombe",
 			Description: "Telkombe MCP server for filesystem access - custom implementation",
-			Publisher:   "anubissbe",
+			Publisher:   "telkombe",
 			UpdatedAt:   time.Now().Format(time.RFC3339),
 			PullCount:   1234,
 			StarCount:   15,
 			Tags:        []string{"latest"},
 			Icon:        "folder",
 			Categories:  []string{"storage", "files"},
-			FullName:    "anubissbe/mcp-filesystem:latest",
+			FullName:    "telkombe/mcp-filesystem:latest",
 			InstallReady: true,
 		},
 		{
 			Name:        "mcp-docker",
-			Namespace:   "anubissbe",
+			Namespace:   "telkombe",
 			Description: "Telkombe MCP server for Docker operations - custom implementation",
-			Publisher:   "anubissbe",
+			Publisher:   "telkombe",
 			UpdatedAt:   time.Now().Format(time.RFC3339),
 			PullCount:   567,
 			StarCount:   12,
 			Tags:        []string{"latest"},
 			Icon:        "docker",
 			Categories:  []string{"docker", "containers"},
-			FullName:    "anubissbe/mcp-docker:latest",
+			FullName:    "telkombe/mcp-docker:latest",
 			InstallReady: true,
 		},
 		{
 			Name:        "mcp-shell",
-			Namespace:   "anubissbe",
+			Namespace:   "telkombe",
 			Description: "Telkombe MCP server for shell access - execute commands remotely",
-			Publisher:   "anubissbe",
+			Publisher:   "telkombe",
 			UpdatedAt:   time.Now().Format(time.RFC3339),
 			PullCount:   890,
 			StarCount:   18,
 			Tags:        []string{"latest"},
 			Icon:        "terminal",
 			Categories:  []string{"shell", "automation"},
-			FullName:    "anubissbe/mcp-shell:latest",
+			FullName:    "telkombe/mcp-shell:latest",
 			InstallReady: true,
 		},
 		{
@@ -399,7 +399,7 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			},
 		}, nil
 		
-	case "anubissbe/mcp-filesystem":
+	case "telkombe/mcp-filesystem":
 		return &MCPConfig{
 			Image: fullName,
 			Env: map[string]string{
@@ -410,7 +410,7 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			},
 		}, nil
 		
-	case "anubissbe/mcp-docker":
+	case "telkombe/mcp-docker":
 		return &MCPConfig{
 			Image: fullName,
 			Env: map[string]string{
@@ -421,7 +421,7 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			},
 		}, nil
 		
-	case "anubissbe/mcp-shell":
+	case "telkombe/mcp-shell":
 		return &MCPConfig{
 			Image: fullName,
 			Env: map[string]string{
