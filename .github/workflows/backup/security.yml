@@ -53,7 +53,7 @@ jobs:
       run: |
         cd backend
         if ls *.go 1> /dev/null 2>&1; then
-          gosec -f sarif -o gosec-results.sarif ./... || (echo "::warning::gosec found issues" && exit 0)
+          gosec -f sarif -o gosec-results.sarif ./... || echo "gosec found issues (will be addressed)"
         else
           echo "No Go files found, skipping gosec scan"
           echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"gosec"}},"results":[]}]}' > gosec-results.sarif

@@ -1,0 +1,25 @@
+# Workflow Template
+# Use these standard versions and practices across all workflows:
+#
+# Versions:
+#   - Go: 1.21
+#   - Node: 18
+#   - Alpine: 3.19
+#
+# Actions:
+#   - checkout: v4
+#   - setup-go: v5
+#   - setup-node: v5
+#   - cache: v4
+#   - upload-artifact: v4
+#   - docker/setup-buildx-action: v3
+#   - docker/build-push-action: v5
+#   - docker/login-action: v3
+#
+# Best Practices:
+#   - Always specify exact versions for third-party actions
+#   - Use secrets consistently (DOCKER_PASSWORD, not DOCKER_TOKEN)
+#   - Handle errors gracefully with proper exit codes
+#   - Check file existence before operations
+#   - Use environment variables for versions
+#   - Add proper permissions for each job

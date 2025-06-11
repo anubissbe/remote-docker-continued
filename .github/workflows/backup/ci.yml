@@ -9,7 +9,6 @@ on:
 env:
   GO_VERSION: '1.21'
   NODE_VERSION: '18'
-  GOLANGCI_LINT_VERSION: 'v1.55.2'
 
 jobs:
   lint:
@@ -19,17 +18,17 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
           
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           
       - name: Cache Go modules
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -37,7 +36,7 @@ jobs:
             ${{ runner.os }}-go-
             
       - name: Cache Node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ui/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('ui/package-lock.json') }}
@@ -57,14 +56,14 @@ jobs:
       - name: Run Go linters
         uses: golangci/golangci-lint-action@v4
         with:
-          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          version: latest
           working-directory: backend
           args: --timeout=5m
           
       - name: Run ESLint
         run: |
           cd ui
-          npm run lint || echo "::warning::ESLint found issues"
+          npm run lint
           
   test:
     name: Test
@@ -74,24 +73,14 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
           
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
-      - name: Install Go dependencies
-        run: |
-          cd backend
-          go mod download
-          
-      - name: Install Node dependencies
-        run: |
-          cd ui
-          npm ci
           
       - name: Run Go tests
         run: |
@@ -102,29 +91,19 @@ jobs:
       - name: Run Node tests
         run: |
           cd ui
-          if [ -f "jest.config.js" ] || [ -f "jest.config.ts" ]; then
-            npm test -- --coverage --watchAll=false --passWithNoTests
-          else
-            echo "::warning::No Jest configuration found, skipping tests"
-            mkdir -p coverage
-            echo '{}' > coverage/coverage-final.json
-          fi
+          npm test -- --coverage --watchAll=false
           
       - name: Upload Go coverage
-        if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           files: ./backend/coverage.out
           flags: backend
-          token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Upload Node coverage
-        if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           directory: ./ui/coverage
           flags: frontend
-          token: ${{ secrets.CODECOV_TOKEN }}
           
   build:
     name: Build
@@ -144,42 +123,18 @@ jobs:
           tags: remote-docker:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          outputs: type=docker,dest=/tmp/remote-docker.tar
-          
-      - name: Upload Docker image
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp/remote-docker.tar
-          retention-days: 1
           
       - name: Build MCP server images
         run: |
           cd mcp-servers
-          if [ -f "build.sh" ]; then
-            chmod +x build.sh
-            ./build.sh --no-push || echo "::warning::MCP server build failed"
-          else
-            echo "::warning::No MCP server build script found"
-          fi
+          ./build.sh --no-push
           
   security:
     name: Security Scan
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      security-events: write
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp
-          
-      - name: Load Docker image
-        run: docker load -i /tmp/remote-docker.tar
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -187,18 +142,11 @@ jobs:
           image-ref: 'remote-docker:test'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
           
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
-          
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
           
       - name: Run gosec security scanner
         uses: securego/gosec@master
@@ -206,8 +154,7 @@ jobs:
           args: '-no-fail -fmt sarif -out gosec-results.sarif ./backend/...'
           
       - name: Upload gosec results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'gosec-results.sarif'
           
@@ -223,28 +170,14 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
           
-      - name: Check for integration tests
-        id: check-tests
-        run: |
-          if [ -d "tests/integration" ] && find tests/integration -name "*_test.go" -type f | grep -q .; then
-            echo "has_tests=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_tests=false" >> $GITHUB_OUTPUT
-          fi
-          
       - name: Run integration tests
-        if: steps.check-tests.outputs.has_tests == 'true'
         run: |
           cd tests/integration
           go test -v ./...
-          
-      - name: Skip integration tests
-        if: steps.check-tests.outputs.has_tests == 'false'
-        run: echo "::notice::No integration tests found"
           
   release:
     name: Release
@@ -256,60 +189,39 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Check if release needed
-        id: check-release
-        run: |
-          # Check if we have a new version in metadata.json
-          if [ -f "metadata.json" ]; then
-            VERSION=$(jq -r .version metadata.json)
-            if git tag | grep -q "^v${VERSION}$"; then
-              echo "Version v${VERSION} already released"
-              echo "needed=false" >> $GITHUB_OUTPUT
-            else
-              echo "New version v${VERSION} detected"
-              echo "needed=true" >> $GITHUB_OUTPUT
-              echo "version=${VERSION}" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "No metadata.json found"
-            echo "needed=false" >> $GITHUB_OUTPUT
-          fi
-          
       - name: Set up Docker Buildx
-        if: steps.check-release.outputs.needed == 'true'
         uses: docker/setup-buildx-action@v3
         
       - name: Log in to Docker Hub
-        if: steps.check-release.outputs.needed == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      - name: Download Docker image
-        if: steps.check-release.outputs.needed == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp
-          
-      - name: Load and push Docker image
-        if: steps.check-release.outputs.needed == 'true'
+      - name: Extract version
+        id: version
         run: |
-          docker load -i /tmp/remote-docker.tar
-          docker tag remote-docker:test telkombe/remote-docker:latest
-          docker tag remote-docker:test telkombe/remote-docker:${{ steps.check-release.outputs.version }}
-          docker push telkombe/remote-docker:latest
-          docker push telkombe/remote-docker:${{ steps.check-release.outputs.version }}
+          VERSION=$(jq -r .version metadata.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            telkombe/remote-docker:latest
+            telkombe/remote-docker:${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           
       - name: Create Release
-        if: steps.check-release.outputs.needed == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.check-release.outputs.version }}
-          name: Release v${{ steps.check-release.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
           body: |
-            Docker Desktop Extension v${{ steps.check-release.outputs.version }}
+            Docker Desktop Extension v${{ steps.version.outputs.version }}
             
             See [CHANGELOG.md](CHANGELOG.md) for details.
           draft: false
