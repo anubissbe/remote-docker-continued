@@ -14,7 +14,6 @@
   "license": "MIT",
   "author": "anubissbe",
   "private": true,
-  "type": "module",
   "dependencies": {
     "@docker/docker-mui-theme": "0.0.13",
     "@docker/extension-api-client": "0.3.4",
@@ -42,6 +41,8 @@
   },
   "devDependencies": {
     "@docker/extension-api-client-types": "0.3.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/jest": "29.5.14",
     "@types/node": "22.13.5",
     "@types/react": "19.0.10",
@@ -57,9 +58,11 @@
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "jest": "30.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "29.7.0",
     "jest-environment-jsdom": "^29.6.0",
     "prettier": "^3.0.0",
+    "ts-jest": "^29.2.5",
     "typescript": "5.7.3",
     "vite": "^6.3.5"
   }
