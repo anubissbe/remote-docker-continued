@@ -53,8 +53,8 @@ jobs:
       - name: Cache Docker base images
         run: |
           echo "Pre-pulling base images to avoid rate limits during build..."
-          docker pull golang:1.24-alpine || echo "Warning: Failed to pull golang image"
-          docker pull node:22.2-alpine3.18 || echo "Warning: Failed to pull node image"  
+          docker pull golang:1.21-alpine || echo "Warning: Failed to pull golang image"
+          docker pull node:20-alpine || echo "Warning: Failed to pull node image"  
           docker pull alpine:latest || echo "Warning: Failed to pull alpine image"
           echo "Base image caching completed"
 
@@ -74,7 +74,7 @@ jobs:
 
       - name: Build and push Docker image
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -83,7 +83,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: false
+          provenance: true
           build-args: |
             DOCKER_BUILDKIT=1
             BUILDKIT_INLINE_CACHE=1

@@ -54,10 +54,11 @@ jobs:
           npm ci
           
       - name: Run Go linters
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: latest
           working-directory: backend
+          args: --timeout=5m
           
       - name: Run ESLint
         run: |
