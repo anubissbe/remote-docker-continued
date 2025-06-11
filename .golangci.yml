@@ -15,7 +15,6 @@ run:
 linters:
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -28,7 +27,6 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - golint
     - gomnd
     - goprintffuncname
     - gosec
@@ -42,19 +40,16 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
     - prealloc
     - predeclared
     - asciicheck
     - errorlint
-    - exhaustivestruct
     - exportloopref
     - gochecknoglobals
     - gocognit
@@ -67,9 +62,14 @@ linters:
     - wsl
 
   disable:
-    - interfacer # deprecated
-    - maligned   # deprecated
-    - scopelint  # deprecated
+    - deadcode        # deprecated, replaced by unused
+    - golint          # deprecated, replaced by revive  
+    - structcheck     # deprecated, replaced by unused
+    - varcheck        # deprecated, replaced by unused
+    - exhaustivestruct # deprecated
+    - interfacer      # deprecated
+    - maligned        # deprecated
+    - scopelint       # deprecated
 
 linters-settings:
   depguard:
@@ -113,9 +113,6 @@ linters-settings:
     
   goimports:
     local-prefixes: github.com/anubissbe/remote-docker
-    
-  golint:
-    min-confidence: 0
     
   gomnd:
     settings:
