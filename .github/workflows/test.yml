@@ -21,7 +21,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
 
@@ -31,8 +31,8 @@ jobs:
         go mod download
 
     - name: Check for tests and run if they exist
+      working-directory: backend
       run: |
-        cd backend
         if find . -name "*_test.go" | grep -q .; then
           echo "Found Go tests, running them..."
           go test -v -race -coverprofile=coverage.out ./...
@@ -43,8 +43,8 @@ jobs:
         fi
 
     - name: Generate coverage report
+      working-directory: backend
       run: |
-        cd backend
         if [ -f coverage.out ] && [ -s coverage.out ]; then
           go tool cover -html=coverage.out -o coverage.html
         else
@@ -82,7 +82,7 @@ jobs:
     - name: Run tests
       run: |
         cd ui
-        npm test -- --coverage --watchAll=false --passWithNoTests || (echo "Tests failed but continuing" && exit 0)
+        npm test -- --coverage --watchAll=false --passWithNoTests
         # Create coverage directory if tests didn't run
         if [ ! -d coverage ]; then
           mkdir -p coverage

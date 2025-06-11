@@ -61,7 +61,7 @@ jobs:
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
           working-directory: backend
-          args: --timeout=5m
+          args: --timeout=10m
           
       - name: Run ESLint
         run: |
@@ -104,7 +104,7 @@ jobs:
       - name: Run Node tests
         run: |
           cd ui
-          if [ -f "jest.config.js" ] || [ -f "jest.config.ts" ]; then
+          if [ -f "jest.config.js" ] || [ -f "jest.config.ts" ] || [ -f "jest.config.json" ] || grep -q '"jest"' package.json; then
             npm test -- --coverage --watchAll=false --passWithNoTests
           else
             echo "::warning::No Jest configuration found, skipping tests"
@@ -253,6 +253,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test, build, security, integration]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+      packages: write
+    env:
+      IMAGE_NAME: remote-docker
+      IMAGE_OWNER: telkombe
     steps:
       - uses: actions/checkout@v4
         with:

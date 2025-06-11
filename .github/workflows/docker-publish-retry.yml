@@ -53,7 +53,7 @@ jobs:
       - name: Build and push Docker image (with retry)
         uses: nick-fields/retry@v2.9.0
         with:
-          timeout_minutes: 30
+          timeout_minutes: 60
           max_attempts: 3
           retry_wait_seconds: 300  # Wait 5 minutes between retries
           command: |
