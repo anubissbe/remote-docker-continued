@@ -1,1 +1,63 @@
-ui/node_modules
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+docs/
+LICENSE
+
+# Development
+.editorconfig
+.eslintrc*
+.prettierrc*
+
+# Tests
+tests/
+*test*
+*.spec.*
+coverage/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Node
+ui/node_modules/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Scripts (not needed in production image)
+scripts/
+
+# Binary files
+client
+server
+ssh

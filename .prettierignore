@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+build/
+dist/
+*.min.js
+*.min.css
+
+# Generated files
+coverage/
+*.log
+
+# Go files (use gofmt instead)
+*.go
+
+# Lock files
+package-lock.json
+yarn.lock
+go.sum
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Git
+.git/
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Temporary
+tmp/
+temp/

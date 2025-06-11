@@ -59,10 +59,47 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
     setError(null);
     
     try {
-      const response = await ddClient.extension?.vm?.service?.get('/mcp/servers');
-      if (response && typeof response === 'object' && 'servers' in response) {
-        setServers((response as any).servers);
+      console.log('Loading MCP servers for environment:', currentEnv);
+      const rawResponse = await ddClient.extension?.vm?.service?.get(
+        `/mcp/servers?username=${currentEnv.username}&hostname=${currentEnv.hostname}`
+      );
+      console.log('MCP servers raw response:', rawResponse);
+      console.log('Response type:', typeof rawResponse);
+      console.log('Response keys:', rawResponse ? Object.keys(rawResponse) : 'null');
+      
+      // Try different ways to extract the data
+      let servers = [];
+      const response = rawResponse as any;
+      
+      if (!response) {
+        console.warn('No response from server');
+      } else if (typeof response === 'string') {
+        try {
+          const parsed = JSON.parse(response);
+          console.log('Parsed response:', parsed);
+          if (parsed.servers) {
+            servers = parsed.servers;
+          }
+        } catch (e) {
+          console.error('Failed to parse string response:', e);
+        }
+      } else if (response.servers !== undefined) {
+        console.log('Found servers property:', response.servers);
+        servers = response.servers;
+      } else if (Array.isArray(response)) {
+        console.log('Direct array response');
+        servers = response;
+      } else if (response.data && response.data.servers) {
+        console.log('Found servers in data property:', response.data.servers);
+        servers = response.data.servers;
+      } else if (response.result && response.result.servers) {
+        console.log('Found servers in result property:', response.result.servers);
+        servers = response.result.servers;
       }
+      
+      console.log('Final servers array:', servers);
+      console.log('Number of servers:', servers.length);
+      setServers(servers || []);
     } catch (err) {
       console.error('Error loading MCP servers:', err);
       setError('Failed to load MCP servers');

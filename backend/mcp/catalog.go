@@ -177,6 +177,76 @@ func (s *MCPCatalogService) GetCatalog(page int, search string, category string)
 			FullName:    "mcp/ai-llm:latest",
 			InstallReady: false,
 		},
+		{
+			Name:        "mcp-filesystem",
+			Namespace:   "telkombe",
+			Description: "Telkombe MCP server for filesystem access - custom implementation",
+			Publisher:   "telkombe",
+			UpdatedAt:   time.Now().Format(time.RFC3339),
+			PullCount:   1234,
+			StarCount:   15,
+			Tags:        []string{"latest"},
+			Icon:        "folder",
+			Categories:  []string{"storage", "files"},
+			FullName:    "telkombe/mcp-filesystem:latest",
+			InstallReady: true,
+		},
+		{
+			Name:        "mcp-docker",
+			Namespace:   "telkombe",
+			Description: "Telkombe MCP server for Docker operations - custom implementation",
+			Publisher:   "telkombe",
+			UpdatedAt:   time.Now().Format(time.RFC3339),
+			PullCount:   567,
+			StarCount:   12,
+			Tags:        []string{"latest"},
+			Icon:        "docker",
+			Categories:  []string{"docker", "containers"},
+			FullName:    "telkombe/mcp-docker:latest",
+			InstallReady: true,
+		},
+		{
+			Name:        "mcp-shell",
+			Namespace:   "telkombe",
+			Description: "Telkombe MCP server for shell access - execute commands remotely",
+			Publisher:   "telkombe",
+			UpdatedAt:   time.Now().Format(time.RFC3339),
+			PullCount:   890,
+			StarCount:   18,
+			Tags:        []string{"latest"},
+			Icon:        "terminal",
+			Categories:  []string{"shell", "automation"},
+			FullName:    "telkombe/mcp-shell:latest",
+			InstallReady: true,
+		},
+		{
+			Name:        "fetch",
+			Namespace:   "mcp",
+			Description: "MCP server for web fetching - retrieve and process web content",
+			Publisher:   "MCP Community",
+			UpdatedAt:   time.Now().Format(time.RFC3339),
+			PullCount:   2345,
+			StarCount:   23,
+			Tags:        []string{"latest"},
+			Icon:        "web",
+			Categories:  []string{"web", "http"},
+			FullName:    "mcp/fetch:latest",
+			InstallReady: true,
+		},
+		{
+			Name:        "everything",
+			Namespace:   "mcp",
+			Description: "MCP server with comprehensive capabilities - all-in-one solution",
+			Publisher:   "MCP Community",
+			UpdatedAt:   time.Now().Format(time.RFC3339),
+			PullCount:   4567,
+			StarCount:   45,
+			Tags:        []string{"latest"},
+			Icon:        "settings",
+			Categories:  []string{"tools", "automation"},
+			FullName:    "mcp/everything:latest",
+			InstallReady: true,
+		},
 	}
 	
 	// Filter by search
@@ -311,6 +381,52 @@ func GetPredefinedConfig(fullName string) (*MCPConfig, error) {
 			Image: fullName,
 			Env: map[string]string{},
 			Command: []string{"sleep", "3600"}, // Keep container running
+		}, nil
+		
+	case "mcp/fetch":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{
+				"MCP_MODE": "stdio",
+			},
+		}, nil
+		
+	case "mcp/everything":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{
+				"MCP_MODE": "stdio",
+			},
+		}, nil
+		
+	case "telkombe/mcp-filesystem":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{
+				"MCP_MODE": "stdio",
+			},
+			Volumes: map[string]string{
+				"/home": "/workspace",
+			},
+		}, nil
+		
+	case "telkombe/mcp-docker":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{
+				"MCP_MODE": "stdio",
+			},
+			Volumes: map[string]string{
+				"/var/run/docker.sock": "/var/run/docker.sock",
+			},
+		}, nil
+		
+	case "telkombe/mcp-shell":
+		return &MCPConfig{
+			Image: fullName,
+			Env: map[string]string{
+				"MCP_MODE": "stdio",
+			},
 		}, nil
 		
 	default:

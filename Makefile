@@ -1,18 +1,27 @@
 # Remote Docker Extension Makefile
 
-.PHONY: help build push install uninstall clean dev lint test
+.PHONY: help build push install uninstall clean dev lint test format check setup
 
 # Default target
 help:
 	@echo "Remote Docker Extension - Make targets:"
+	@echo ""
+	@echo "Development:"
+	@echo "  make setup     - Install all development dependencies"
+	@echo "  make dev       - Build and install for development"
 	@echo "  make build     - Build the Docker extension image"
-	@echo "  make push      - Push image to Docker Hub"
+	@echo "  make clean     - Clean build artifacts"
+	@echo ""
+	@echo "Quality:"
+	@echo "  make lint      - Run all linters"
+	@echo "  make format    - Auto-format code"
+	@echo "  make test      - Run all tests"
+	@echo "  make check     - Run lint, format check, and tests"
+	@echo ""
+	@echo "Deployment:"
 	@echo "  make install   - Install extension in Docker Desktop"
 	@echo "  make uninstall - Remove extension from Docker Desktop"
-	@echo "  make dev       - Build and install for development"
-	@echo "  make clean     - Clean build artifacts"
-	@echo "  make lint      - Run linters"
-	@echo "  make test      - Run tests"
+	@echo "  make push      - Push image to Docker Hub"
 
 # Build the extension
 build:
@@ -45,14 +54,39 @@ clean:
 	@echo "Cleaning build artifacts..."
 	@./scripts/clean.sh
 
+# Setup development environment
+setup:
+	@echo "Setting up development environment..."
+	@./scripts/dev-setup.sh
+	@echo "Installing additional development tools..."
+	@command -v golangci-lint >/dev/null 2>&1 || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+
 # Run linters
 lint:
 	@echo "Running linters..."
-	cd backend && go fmt ./... && go vet ./...
+	@echo "→ Go linting..."
+	cd backend && golangci-lint run
+	@echo "→ TypeScript linting..."
 	cd ui && npm run lint
+
+# Format code
+format:
+	@echo "Formatting code..."
+	@echo "→ Go formatting..."
+	cd backend && go fmt ./...
+	@echo "→ TypeScript/React formatting..."
+	cd ui && npm run format
 
 # Run tests
 test:
 	@echo "Running tests..."
-	cd backend && go test ./...
-	cd ui && npm test
+	@echo "→ Backend tests..."
+	cd backend && go test -v -race -coverprofile=coverage.out ./...
+	@echo "→ Frontend tests..."
+	cd ui && npm test -- --coverage --watchAll=false
+	@echo "→ Integration tests..."
+	cd tests/integration && go test -v ./...
+
+# Run all checks
+check: lint test
+	@echo "All checks passed! ✅"

@@ -50,6 +50,7 @@ interface MCPServersWithCatalogProps {
 
 const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEnv }) => {
   const [tabValue, setTabValue] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -58,6 +59,8 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
   const handleInstallComplete = () => {
     // Switch to installed servers tab after installation
     setTabValue(0);
+    // Force refresh of the servers list
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -94,7 +97,7 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
         
         <Box sx={{ p: 2 }}>
           <TabPanel value={tabValue} index={0}>
-            <MCPServers currentEnv={currentEnv} />
+            <MCPServers key={refreshKey} currentEnv={currentEnv} />
           </TabPanel>
           
           <TabPanel value={tabValue} index={1}>

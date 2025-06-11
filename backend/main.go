@@ -191,6 +191,8 @@ func main() {
 	router.POST("/mcp/servers/:id/stop", stopMCPServer)
 	router.DELETE("/mcp/servers/:id", deleteMCPServer)
 	router.GET("/mcp/servers/:id/logs", getMCPServerLogs)
+	router.GET("/mcp/servers/:id/connection", getMCPServerConnection)
+	router.GET("/mcp/connections", getAllMCPConnections)
 
 	// Graceful shutdown handling
 	c := make(chan os.Signal, 1)
@@ -2189,43 +2191,17 @@ func installFromCatalog(ctx echo.Context) error {
 		})
 	}
 	
-	// Create the server with timeout
+	// Create the server
 	logger.Info("About to call mcpManager.CreateServer")
-	
-	// Create a timeout context
-	timeoutCtx, cancel := context.WithTimeout(ctx.Request().Context(), 10*time.Second)
-	defer cancel()
-	
-	// Use a channel to handle the result
-	type result struct {
-		server *mcp.MCPServer
-		err    error
-	}
-	
-	resultChan := make(chan result, 1)
-	go func() {
-		server, err := mcpManager.CreateServer(timeoutCtx, mcpReq)
-		resultChan <- result{server: server, err: err}
-	}()
-	
-	// Wait for result or timeout
-	var server *mcp.MCPServer
-	select {
-	case res := <-resultChan:
-		if res.err != nil {
-			logger.Errorf("Failed to create MCP server from catalog: %v", res.err)
-			return ctx.JSON(http.StatusInternalServerError, map[string]string{
-				"error": fmt.Sprintf("Failed to create server: %v", res.err),
-			})
-		}
-		logger.Infof("MCP server created successfully: %s", res.server.ID)
-		server = res.server
-	case <-timeoutCtx.Done():
-		logger.Error("Timeout waiting for MCP server creation")
+	server, err := mcpManager.CreateServer(ctx.Request().Context(), mcpReq)
+	if err != nil {
+		logger.Errorf("Failed to create MCP server from catalog: %v", err)
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Timeout creating MCP server",
+			"error": fmt.Sprintf("Failed to create server: %v", err),
 		})
 	}
+	
+	logger.Infof("MCP server created successfully: %s", server.ID)
 	
 	// If autoStart is requested, start the server
 	if req.AutoStart {
@@ -2240,5 +2216,37 @@ func installFromCatalog(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, mcp.MCPServerResponse{
 		Server:  server,
 		Message: fmt.Sprintf("MCP server '%s' installation initiated", req.Name),
+	})
+}
+
+// Get MCP server connection information
+func getMCPServerConnection(ctx echo.Context) error {
+	serverID := ctx.Param("id")
+	if serverID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing server ID"})
+	}
+	
+	info, err := mcpManager.GetConnectionInfo(serverID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to get connection info: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, info)
+}
+
+// Get all MCP server connections
+func getAllMCPConnections(ctx echo.Context) error {
+	infos, err := mcpManager.GetAllConnectionInfo()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Failed to get connections: %v", err),
+		})
+	}
+	
+	return ctx.JSON(http.StatusOK, map[string]interface{}{
+		"connections": infos,
+		"total": len(infos),
 	})
 }

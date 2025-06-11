@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 	
@@ -54,11 +55,15 @@ func NewManager(sshMgr SSHManager, logger *logrus.Logger) *Manager {
 
 // CreateServer creates a new MCP server on the remote host
 func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPServer, error) {
+	m.logger.Info("CreateServer: Starting")
+	
 	// Get the next available port BEFORE acquiring the lock to avoid deadlock
 	nextPort := m.getNextAvailablePort()
+	m.logger.Infof("CreateServer: Got next port: %d", nextPort)
 	
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	m.logger.Info("CreateServer: Acquired lock")
 	
 	// Generate unique ID
 	serverID := fmt.Sprintf("mcp-%s-%d", req.Type, time.Now().Unix())
@@ -76,12 +81,15 @@ func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPS
 	
 	// Store server
 	m.servers[serverID] = server
+	m.logger.Infof("CreateServer: Stored server %s", serverID)
 	
 	// Save to disk
-	m.saveServers()
+	m.saveServersUnsafe()
+	m.logger.Info("CreateServer: Saved to disk")
 	
 	// Deploy in background
 	go m.deployServer(ctx, server)
+	m.logger.Info("CreateServer: Started deployment goroutine")
 	
 	return server, nil
 }
@@ -246,8 +254,8 @@ func (m *Manager) deployServer(ctx context.Context, server *MCPServer) {
 		return
 	}
 	
-	// Extract container ID from output
-	containerID := output // Assuming output is the container ID
+	// Extract container ID from output (trim whitespace)
+	containerID := strings.TrimSpace(output)
 	m.updateServerContainerID(server.ID, containerID)
 	
 	// Create SSH tunnel for MCP connection
@@ -265,11 +273,24 @@ func (m *Manager) deployServer(ctx context.Context, server *MCPServer) {
 
 // buildDockerCommand constructs the docker run command for the server
 func (m *Manager) buildDockerCommand(server *MCPServer) string {
-	// Base command
-	cmd := fmt.Sprintf("docker run -d --name %s", server.ID)
+	// Base command with restart policy
+	cmd := fmt.Sprintf("docker run -d --name %s --restart unless-stopped", server.ID)
 	
-	// Add port mapping only if environment has MCP_PORT set
-	if _, hasMCPPort := server.Config.Env["MCP_PORT"]; hasMCPPort {
+	// Add labels for identification
+	cmd += fmt.Sprintf(" -l mcp.server.id=%s", server.ID)
+	cmd += fmt.Sprintf(" -l mcp.server.name=%s", server.Name)
+	cmd += fmt.Sprintf(" -l mcp.server.type=%s", server.Type)
+	
+	// For MCP servers in stdio mode, we need to keep them running
+	if mode, hasMode := server.Config.Env["MCP_MODE"]; hasMode && mode == "stdio" {
+		// Add a command to keep the container running if no command is specified
+		if len(server.Config.Command) == 0 {
+			server.Config.Command = []string{"tail", "-f", "/dev/null"}
+		}
+	}
+	
+	// Add port mapping only if not in stdio mode
+	if mode, hasMode := server.Config.Env["MCP_MODE"]; !hasMode || mode != "stdio" {
 		cmd += fmt.Sprintf(" -p %d:%d", server.Port, server.Port)
 	}
 	
