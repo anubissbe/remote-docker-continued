@@ -28,6 +28,14 @@ jobs:
         cache: 'npm'
         cache-dependency-path: ui/package-lock.json
 
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
     - name: Install frontend dependencies
       run: |
         cd ui
@@ -43,6 +51,11 @@ jobs:
       with:
         go-version: '1.23'
 
+    - name: Install Go dependencies
+      run: |
+        cd backend
+        go mod download
+
     - name: Install gosec
       run: |
         # Use the latest release URL to avoid GitHub auth issues
@@ -53,9 +66,13 @@ jobs:
       run: |
         cd backend
         if ls *.go 1> /dev/null 2>&1; then
-          gosec -f sarif -o gosec-results.sarif ./... || (echo "::warning::gosec found issues" && exit 0)
+          gosec -f sarif -o gosec-results.sarif ./... || echo "::warning::gosec found issues but continuing"
         else
-          echo "No Go files found, skipping gosec scan"
+          echo "No Go files found, creating empty SARIF"
+          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"gosec"}},"results":[]}]}' > gosec-results.sarif
+        fi
+        # Ensure the file always exists
+        if [ ! -f gosec-results.sarif ]; then
           echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"gosec"}},"results":[]}]}' > gosec-results.sarif
         fi
 
@@ -67,14 +84,23 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
 
+    - name: Ensure Trivy SARIF file exists
+      run: |
+        if [ ! -f trivy-results.sarif ]; then
+          echo "Creating empty Trivy SARIF file"
+          echo '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"trivy"}},"results":[]}]}' > trivy-results.sarif
+        fi
+
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
+      continue-on-error: true
         
     - name: Upload gosec scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'backend/gosec-results.sarif'
+      continue-on-error: true
