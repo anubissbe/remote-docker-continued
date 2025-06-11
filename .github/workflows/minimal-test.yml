@@ -1,0 +1,59 @@
+name: Minimal Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-basic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List files
+        run: |
+          echo "=== Root directory ==="
+          ls -la
+          echo "=== Backend directory ==="
+          ls -la backend/
+          echo "=== UI directory ==="
+          ls -la ui/
+          echo "=== Package.json exists ==="
+          test -f ui/package.json && echo "✅ ui/package.json EXISTS" || echo "❌ ui/package.json MISSING"
+          echo "=== Go.mod exists ==="
+          test -f backend/go.mod && echo "✅ backend/go.mod EXISTS" || echo "❌ backend/go.mod MISSING"
+          echo "=== Metadata exists ==="
+          test -f metadata.json && echo "✅ metadata.json EXISTS" || echo "❌ metadata.json MISSING"
+
+      - name: Check metadata version
+        run: |
+          echo "=== Metadata content ==="
+          cat metadata.json
+          echo "=== Version extraction ==="
+          jq -r .version metadata.json
+
+      - name: Test Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test UI install
+        run: |
+          cd ui
+          npm ci
+          echo "✅ NPM CI succeeded"
+
+      - name: Test UI build
+        run: |
+          cd ui
+          npm run build
+          echo "✅ UI BUILD succeeded"
+
+      - name: Test UI tests
+        run: |
+          cd ui
+          npm test -- --passWithNoTests
+          echo "✅ UI TESTS succeeded"
