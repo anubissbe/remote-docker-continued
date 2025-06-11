@@ -23,6 +23,7 @@ import {
   Button,
   useTheme
 } from '@mui/material';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Icons
 import ViewListIcon from '@mui/icons-material/ViewList';

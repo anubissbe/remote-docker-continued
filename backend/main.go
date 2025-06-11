@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 	"remote-docker/mcp"
+	"remote-docker/utils"
 )
 
 var (
@@ -303,6 +305,14 @@ func getDashboardOverview(ctx echo.Context) error {
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
 
 	// Gather container statistics - using simpler commands
 	containerCmd := "docker ps -a | wc -l && docker ps | wc -l"
@@ -429,6 +439,14 @@ func getDashboardResources(ctx echo.Context) error {
 
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
 	}
 
 	// Get container resource usage with docker stats
@@ -581,6 +599,14 @@ func getDashboardSystemInfo(ctx echo.Context) error {
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
 
 	// Create a response with defaults
 	info := SystemInfoResponse{
@@ -673,6 +699,14 @@ func getDashboardEvents(ctx echo.Context) error {
 
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
 	}
 
 	// Get recent Docker events (up to 20 events, simpler command)
@@ -811,8 +845,12 @@ func getContainerLogs(ctx echo.Context) error {
 		dockerCmd.WriteString(" --timestamps")
 	}
 
-	// Add container ID
-	dockerCmd.WriteString(fmt.Sprintf(" %s", req.ContainerId))
+	// Validate and add container ID
+	if err := utils.ValidateContainerID(req.ContainerId); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid container ID: %v", err)})
+	}
+	dockerCmd.WriteString(" ")
+	dockerCmd.WriteString(utils.ShellEscape(req.ContainerId))
 
 	logger.Infof("Executing log command: %s", dockerCmd.String())
 
@@ -854,9 +892,23 @@ func getComposeLogs(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
+	// Validate compose project name
+	if req.ComposeProject == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Compose project name cannot be empty"})
+	}
+	if len(req.ComposeProject) > 255 {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Compose project name too long"})
+	}
+	// Basic validation for compose project names
+	if !regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`).MatchString(req.ComposeProject) {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid compose project name format"})
+	}
+	
 	// Build docker logs command with appropriate options
 	dockerCmd := strings.Builder{}
-	dockerCmd.WriteString(fmt.Sprintf("docker compose -p %s logs", req.ComposeProject))
+	dockerCmd.WriteString("docker compose -p ")
+	dockerCmd.WriteString(utils.ShellEscape(req.ComposeProject))
+	dockerCmd.WriteString(" logs")
 
 	// Add options
 	if req.Tail > 0 {
@@ -969,9 +1021,14 @@ func (m *SSHTunnelManager) OpenConnection(username, hostname string) error {
 		"-S", controlPath,
 		"-o", "StrictHostKeyChecking=no",
 		"-o", "BatchMode=yes",
-		fmt.Sprintf("%s@%s", username, hostname),
-		"echo 'Connection test'",
 	)
+	
+	// Build safe SSH target for test
+	testTarget, err := utils.BuildSSHTarget(username, hostname)
+	if err != nil {
+		return fmt.Errorf("invalid SSH target for test: %v", err)
+	}
+	testCmd.Args = append(testCmd.Args, testTarget, "echo 'Connection test'")
 
 	output, err := testCmd.CombinedOutput()
 	if err != nil {
@@ -1010,8 +1067,19 @@ func (m *SSHTunnelManager) CloseConnection(username, hostname string) error {
 		"-o ConnectTimeout=5",
 		"-S", conn.ControlPath,
 		"-O", "exit", // Send exit command to master process
-		fmt.Sprintf("%s@%s", username, hostname),
 	)
+	
+	// Build safe SSH target
+	closeTarget, err := utils.BuildSSHTarget(username, hostname)
+	if err != nil {
+		logger.Warnf("Invalid SSH target for close: %v", err)
+		// Try to kill the process directly if we can't build a valid target
+		if conn.Cmd != nil && conn.Cmd.Process != nil {
+			conn.Cmd.Process.Kill()
+		}
+		return nil
+	}
+	closeCmd.Args = append(closeCmd.Args, closeTarget)
 
 	logger.Infof("Closing SSH connection for %s", key)
 	output, err := closeCmd.CombinedOutput()
@@ -1049,8 +1117,19 @@ func (m *SSHTunnelManager) CloseAllConnections() {
 				"-o ConnectTimeout=5",
 				"-S", conn.ControlPath,
 				"-O", "exit",
-				fmt.Sprintf("%s@%s", conn.Username, conn.Hostname),
 			)
+			
+			// Build safe SSH target
+			sshTarget, err := utils.BuildSSHTarget(conn.Username, conn.Hostname)
+			if err != nil {
+				logger.Warnf("Invalid SSH target for close: %v", err)
+				// Try to kill the process directly
+				if conn.Cmd != nil && conn.Cmd.Process != nil {
+					conn.Cmd.Process.Kill()
+				}
+				continue
+			}
+			closeCmd.Args = append(closeCmd.Args, sshTarget)
 
 			logger.Infof("Closing SSH connection for %s", key)
 			output, err := closeCmd.CombinedOutput()
@@ -1101,9 +1180,14 @@ func (m *SSHTunnelManager) ExecuteCommand(username, hostname, command string) ([
 		"-S", controlPath,
 		"-o", "StrictHostKeyChecking=no",
 		"-o", "BatchMode=yes",
-		fmt.Sprintf("%s@%s", username, hostname),
-		command,
 	)
+	
+	// Build safe SSH target
+	sshTarget, err := utils.BuildSSHTarget(username, hostname)
+	if err != nil {
+		return nil, fmt.Errorf("invalid SSH target: %v", err)
+	}
+	cmd.Args = append(cmd.Args, sshTarget, command)
 
 	// Run the command and return output
 	return cmd.CombinedOutput()
@@ -1126,9 +1210,15 @@ func (m *SSHTunnelManager) IsConnectionActive(username, hostname string) bool {
 		"-S", conn.ControlPath,
 		"-o", "StrictHostKeyChecking=no",
 		"-o", "BatchMode=yes",
-		fmt.Sprintf("%s@%s", username, hostname),
-		"echo 'Connection test'",
 	)
+	
+	// Build safe SSH target
+	sshTarget, err := utils.BuildSSHTarget(username, hostname)
+	if err != nil {
+		logger.Warnf("Invalid SSH target for test: %v", err)
+		return false
+	}
+	testCmd.Args = append(testCmd.Args, sshTarget, "echo 'Connection test'")
 
 	if err := testCmd.Run(); err != nil {
 		logger.Warnf("SSH connection for %s appears to be broken: %v", key, err)
@@ -1168,8 +1258,19 @@ func (m *SSHTunnelManager) CleanupIdleConnections(idleTimeout time.Duration) {
 				"-o ConnectTimeout=5",
 				"-S", conn.ControlPath,
 				"-O", "exit",
-				fmt.Sprintf("%s@%s", conn.Username, conn.Hostname),
 			)
+			
+			// Build safe SSH target
+			sshTarget, err := utils.BuildSSHTarget(conn.Username, conn.Hostname)
+			if err != nil {
+				logger.Warnf("Invalid SSH target for close: %v", err)
+				// Try to kill the process directly
+				if conn.Cmd != nil && conn.Cmd.Process != nil {
+					conn.Cmd.Process.Kill()
+				}
+				continue
+			}
+			closeCmd.Args = append(closeCmd.Args, sshTarget)
 
 			output, err := closeCmd.CombinedOutput()
 			if err != nil {
@@ -1221,6 +1322,14 @@ func openTunnel(ctx echo.Context) error {
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
 
 	// Open SSH tunnel
 	if err := tunnelManager.OpenConnection(req.Username, req.Hostname); err != nil {
@@ -1230,9 +1339,11 @@ func openTunnel(ctx echo.Context) error {
 		})
 	}
 
+	// Build safe SSH target for message
+	sshTarget, _ := utils.BuildSSHTarget(req.Username, req.Hostname)
 	return ctx.JSON(http.StatusOK, map[string]string{
 		"success": "true",
-		"message": fmt.Sprintf("SSH tunnel opened for %s@%s", req.Username, req.Hostname),
+		"message": fmt.Sprintf("SSH tunnel opened for %s", sshTarget),
 	})
 }
 
@@ -1246,6 +1357,14 @@ func closeTunnel(ctx echo.Context) error {
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
 
 	// Close SSH tunnel
 	if err := tunnelManager.CloseConnection(req.Username, req.Hostname); err != nil {
@@ -1255,9 +1374,11 @@ func closeTunnel(ctx echo.Context) error {
 		})
 	}
 
+	// Build safe SSH target for message
+	sshTarget, _ := utils.BuildSSHTarget(req.Username, req.Hostname)
 	return ctx.JSON(http.StatusOK, map[string]string{
 		"success": "true",
-		"message": fmt.Sprintf("SSH tunnel closed for %s@%s", req.Username, req.Hostname),
+		"message": fmt.Sprintf("SSH tunnel closed for %s", sshTarget),
 	})
 }
 
@@ -1270,11 +1391,21 @@ func getTunnelStatus(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing username or hostname"})
 	}
 
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
+	
 	isActive := tunnelManager.IsConnectionActive(username, hostname)
-
+	
+	// Build safe SSH target for response
+	sshTarget, _ := utils.BuildSSHTarget(username, hostname)
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
 		"active":     isActive,
-		"connection": fmt.Sprintf("%s@%s", username, hostname),
+		"connection": sshTarget,
 	})
 }
 
@@ -1316,6 +1447,14 @@ func listVolumes(ctx echo.Context) error {
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
+	}
 
 	// First, get volume names and driver info
 	dockerCommand := "docker volume ls --format '{{.Name}}|{{.Driver}}'"
@@ -1349,7 +1488,8 @@ func listVolumes(ctx echo.Context) error {
 		driver := parts[1]
 
 		// Get detailed info about this volume
-		inspectCommand := fmt.Sprintf("docker volume inspect %s", volumeName)
+		// Volume name is already validated from the docker volume ls output
+		inspectCommand := utils.BuildDockerCommand("volume", "inspect", volumeName)
 		inspectOutput, inspectErr := tunnelManager.ExecuteCommand(req.Username, req.Hostname, inspectCommand)
 
 		mountpoint := "N/A"
@@ -1417,7 +1557,12 @@ func removeVolume(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
-	dockerCommand := fmt.Sprintf("docker volume rm %s", req.VolumeName)
+	// Validate volume name
+	if err := utils.ValidateVolumeName(req.VolumeName); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid volume name: %v", err)})
+	}
+	
+	dockerCommand := utils.BuildDockerCommand("volume", "rm", req.VolumeName)
 
 	// Execute command using SSH tunnel
 	output, err := tunnelManager.ExecuteCommand(req.Username, req.Hostname, dockerCommand)
@@ -1447,6 +1592,14 @@ func listNetworks(ctx echo.Context) error {
 
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
 	}
 
 	// Format: ID|Name|Driver|Scope
@@ -1483,7 +1636,8 @@ func listNetworks(ctx echo.Context) error {
 		scope := parts[3]
 
 		// Now get detailed info about this network
-		inspectCmd := fmt.Sprintf("docker network inspect %s", networkId)
+		// Network ID is already validated from the docker network ls output
+		inspectCmd := utils.BuildDockerCommand("network", "inspect", networkId)
 
 		// Execute command using SSH tunnel
 		inspectOutput, inspectErr := tunnelManager.ExecuteCommand(req.Username, req.Hostname, inspectCmd)
@@ -1553,8 +1707,13 @@ func removeNetwork(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
+	// Validate network ID
+	if err := utils.ValidateNetworkID(req.NetworkId); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid network ID: %v", err)})
+	}
+	
 	// SSH to remote host and remove network
-	dockerCommand := fmt.Sprintf("docker network rm %s", req.NetworkId)
+	dockerCommand := utils.BuildDockerCommand("network", "rm", req.NetworkId)
 
 	// Execute command using SSH tunnel
 	output, err := tunnelManager.ExecuteCommand(req.Username, req.Hostname, dockerCommand)
@@ -1590,8 +1749,13 @@ func startContainer(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
+	// Validate container ID
+	if err := utils.ValidateContainerID(req.ContainerId); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid container ID: %v", err)})
+	}
+	
 	// Format the docker command
-	dockerCommand := fmt.Sprintf("docker start %s", req.ContainerId)
+	dockerCommand := utils.BuildDockerCommand("start", req.ContainerId)
 
 	// Execute command using SSH tunnel
 	output, err := tunnelManager.ExecuteCommand(req.Username, req.Hostname, dockerCommand)
@@ -1620,8 +1784,13 @@ func stopContainer(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
 	}
 
+	// Validate container ID
+	if err := utils.ValidateContainerID(req.ContainerId); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid container ID: %v", err)})
+	}
+	
 	// Format the docker command
-	dockerCommand := fmt.Sprintf("docker stop %s", req.ContainerId)
+	dockerCommand := utils.BuildDockerCommand("stop", req.ContainerId)
 
 	// Execute command using SSH tunnel
 	output, err := tunnelManager.ExecuteCommand(req.Username, req.Hostname, dockerCommand)
@@ -1651,6 +1820,14 @@ func listImages(ctx echo.Context) error {
 
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
 	}
 
 	// Format the docker command
@@ -1774,6 +1951,14 @@ func connectToRemoteDocker(ctx echo.Context) error {
 
 	if req.Hostname == "" || req.Username == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Missing required fields"})
+	}
+	
+	// Validate SSH credentials
+	if err := utils.ValidateSSHUsername(req.Username); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid username: %v", err)})
+	}
+	if err := utils.ValidateSSHHostname(req.Hostname); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Invalid hostname: %v", err)})
 	}
 
 	// Include Labels in docker ps

@@ -57,13 +57,13 @@ func NewManager(sshMgr SSHManager, logger *logrus.Logger) *Manager {
 func (m *Manager) CreateServer(ctx context.Context, req MCPServerRequest) (*MCPServer, error) {
 	m.logger.Info("CreateServer: Starting")
 	
-	// Get the next available port BEFORE acquiring the lock to avoid deadlock
-	nextPort := m.getNextAvailablePort()
-	m.logger.Infof("CreateServer: Got next port: %d", nextPort)
-	
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.logger.Info("CreateServer: Acquired lock")
+	
+	// Get the next available port INSIDE the lock to prevent race conditions
+	nextPort := m.getNextAvailablePortUnsafe()
+	m.logger.Infof("CreateServer: Got next port: %d", nextPort)
 	
 	// Generate unique ID
 	serverID := fmt.Sprintf("mcp-%s-%d", req.Type, time.Now().Unix())
@@ -345,17 +345,23 @@ func (m *Manager) buildDockerCommand(server *MCPServer) string {
 
 // Helper methods
 func (m *Manager) getNextAvailablePort() int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.getNextAvailablePortUnsafe()
+}
+
+// getNextAvailablePortUnsafe returns the next available port without acquiring the lock
+// This method should only be called when the lock is already held
+func (m *Manager) getNextAvailablePortUnsafe() int {
 	// Simple implementation - in production would check for actual available ports
 	basePort := 9000
 	maxPort := basePort
 	
-	m.mu.RLock()
 	for _, server := range m.servers {
 		if server.Port > maxPort {
 			maxPort = server.Port
 		}
 	}
-	m.mu.RUnlock()
 	
 	if maxPort >= basePort {
 		return maxPort + 1
