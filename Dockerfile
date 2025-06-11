@@ -8,7 +8,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 COPY backend/. .
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    go build -trimpath -ldflags="-s -w" -o bin/service
+    go build -trimpath -ldflags="-s -w" -o bin/service .
 
 FROM --platform=$BUILDPLATFORM node:20-alpine AS client-builder
 WORKDIR /ui
