@@ -3,22 +3,22 @@
 ## Installation Steps
 
 1. **Wait for the build to complete** (usually 5-10 minutes after push)
-   - Check build status at: https://github.com/anubissbe/remote-docker/actions
+   - Check build status at: https://github.com/telkombe/remote-docker/actions
    - Wait for the green checkmark on the latest commit
 
 2. **Remove the current extension** (if installed):
    ```bash
-   docker extension rm anubissbe/remote-docker
+   docker extension rm telkombe/remote-docker
    ```
 
 3. **Install the new version**:
    ```bash
-   docker extension install anubissbe/remote-docker:v1.0.20
+   docker extension install telkombe/remote-docker:v1.0.20
    ```
 
    Or if you want the latest version:
    ```bash
-   docker extension install anubissbe/remote-docker:latest
+   docker extension install telkombe/remote-docker:latest
    ```
 
 ## What to Test

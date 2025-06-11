@@ -164,7 +164,7 @@ if command -v gh &> /dev/null && gh auth status &> /dev/null 2>&1; then
     fi
     
     # Check branch protection
-    if gh api "repos/anubissbe/remote-docker/branches/main/protection" &>/dev/null; then
+    if gh api "repos/telkombe/remote-docker/branches/main/protection" &>/dev/null; then
         echo -e "${GREEN}✅ Branch protection enabled${NC}"
     else
         echo -e "${RED}❌ Branch protection not enabled${NC}"

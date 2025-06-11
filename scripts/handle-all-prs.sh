@@ -71,7 +71,7 @@ show_pr_status() {
     echo -e "${category_color}📋 PR #${pr_num}${NC}: ${description}"
     
     # Get PR status
-    local pr_status=$(gh pr view "$pr_num" --repo anubissbe/remote-docker --json state,mergeable,reviewDecision 2>/dev/null || echo "ERROR")
+    local pr_status=$(gh pr view "$pr_num" --repo telkombe/remote-docker --json state,mergeable,reviewDecision 2>/dev/null || echo "ERROR")
     
     if [ "$pr_status" = "ERROR" ]; then
         echo -e "    ${RED}❌ PR not found or error accessing${NC}"
@@ -85,8 +85,8 @@ show_pr_status() {
     echo -e "    State: ${state} | Mergeable: ${mergeable} | Review: ${review_decision}"
     
     # Check status checks
-    local failing_checks=$(gh pr checks "$pr_num" --repo anubissbe/remote-docker --json state,name --jq '.[] | select(.state != "SUCCESS") | .name' 2>/dev/null | wc -l)
-    local total_checks=$(gh pr checks "$pr_num" --repo anubissbe/remote-docker --json state --jq '. | length' 2>/dev/null)
+    local failing_checks=$(gh pr checks "$pr_num" --repo telkombe/remote-docker --json state,name --jq '.[] | select(.state != "SUCCESS") | .name' 2>/dev/null | wc -l)
+    local total_checks=$(gh pr checks "$pr_num" --repo telkombe/remote-docker --json state --jq '. | length' 2>/dev/null)
     
     if [ "$failing_checks" -eq 0 ]; then
         echo -e "    ${GREEN}✅ All ${total_checks} status checks passing${NC}"
@@ -104,15 +104,15 @@ merge_pr() {
     echo -e "${BLUE}🔄 Merging PR #${pr_num}: ${description}${NC}"
     
     # Check if already approved
-    local review_decision=$(gh pr view "$pr_num" --repo anubissbe/remote-docker --json reviewDecision --jq '.reviewDecision')
+    local review_decision=$(gh pr view "$pr_num" --repo telkombe/remote-docker --json reviewDecision --jq '.reviewDecision')
     
     if [ "$review_decision" != "APPROVED" ]; then
         echo -e "${BLUE}✅ Approving PR #${pr_num}...${NC}"
-        gh pr review "$pr_num" --approve --repo anubissbe/remote-docker --body "Approved: ${description} - Safe dependency/security update."
+        gh pr review "$pr_num" --approve --repo telkombe/remote-docker --body "Approved: ${description} - Safe dependency/security update."
     fi
     
     # Merge
-    if gh pr merge "$pr_num" --squash --repo anubissbe/remote-docker --delete-branch 2>/dev/null; then
+    if gh pr merge "$pr_num" --squash --repo telkombe/remote-docker --delete-branch 2>/dev/null; then
         echo -e "${GREEN}✅ Successfully merged PR #${pr_num}${NC}"
         return 0
     else
@@ -210,7 +210,7 @@ case $choice in
         
     2)
         echo -e "${BLUE}Manual review mode - check each PR individually on GitHub${NC}"
-        echo "Visit: https://github.com/anubissbe/remote-docker/pulls"
+        echo "Visit: https://github.com/telkombe/remote-docker/pulls"
         ;;
         
     3)
@@ -226,4 +226,4 @@ esac
 
 echo ""
 echo -e "${GREEN}🎉 PR handling completed!${NC}"
-echo -e "${BLUE}📊 Check repository status: https://github.com/anubissbe/remote-docker${NC}"
+echo -e "${BLUE}📊 Check repository status: https://github.com/telkombe/remote-docker${NC}"

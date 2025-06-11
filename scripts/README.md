@@ -52,7 +52,7 @@ Builds the Docker extension image locally.
 ```
 
 **Environment Variables:**
-- `IMAGE` - Docker image name (default: anubissbe/remote-docker)
+- `IMAGE` - Docker image name (default: telkombe/remote-docker)
 - `TAG` - Image tag (default: latest)
 
 #### deploy.sh
@@ -64,7 +64,7 @@ Builds and pushes the extension to Docker Hub with multi-architecture support.
 ```
 
 **Environment Variables:**
-- `IMAGE` - Docker image name (default: anubissbe/remote-docker)
+- `IMAGE` - Docker image name (default: telkombe/remote-docker)
 - `TAG` - Image tag (default: latest)
 
 ### Development

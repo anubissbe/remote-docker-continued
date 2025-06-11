@@ -4,15 +4,15 @@
   "description": "Frontend for Remote Docker Desktop Extension",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anubissbe/remote-docker.git",
+    "url": "https://github.com/telkombe/remote-docker.git",
     "directory": "ui"
   },
-  "homepage": "https://github.com/anubissbe/remote-docker",
+  "homepage": "https://github.com/telkombe/remote-docker",
   "bugs": {
-    "url": "https://github.com/anubissbe/remote-docker/issues"
+    "url": "https://github.com/telkombe/remote-docker/issues"
   },
   "license": "MIT",
-  "author": "anubissbe",
+  "author": "telkombe",
   "private": true,
   "dependencies": {
     "@docker/docker-mui-theme": "0.0.13",

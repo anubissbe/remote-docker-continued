@@ -1,10 +1,10 @@
-# Repository settings for anubissbe/remote-docker
+# Repository settings for telkombe/remote-docker
 # This file can be used with the Settings GitHub App to configure repository settings
 
 repository:
   name: remote-docker
   description: "A Docker Desktop extension for managing and monitoring remote Docker environments via SSH tunneling"
-  homepage: https://hub.docker.com/r/anubissbe/remote-docker
+  homepage: https://hub.docker.com/r/telkombe/remote-docker
   topics:
     - docker
     - docker-desktop
@@ -55,7 +55,7 @@ branches:
 
 # Collaborators
 collaborators:
-  - username: anubissbe
+  - username: telkombe
     permission: admin
 
 # Labels

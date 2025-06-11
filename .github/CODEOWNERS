@@ -2,22 +2,22 @@
 # These users will be automatically requested for review when PRs are opened
 
 # Global owners
-* @anubissbe
+* @telkombe
 
 # Backend code
-/backend/ @anubissbe
+/backend/ @telkombe
 
 # Frontend code  
-/ui/ @anubissbe
+/ui/ @telkombe
 
 # Documentation
-/docs/ @anubissbe
-*.md @anubissbe
+/docs/ @telkombe
+*.md @telkombe
 
 # GitHub workflows and configuration
-/.github/ @anubissbe
+/.github/ @telkombe
 
 # Docker and deployment files
-Dockerfile @anubissbe
-docker-compose.yaml @anubissbe
-/scripts/ @anubissbe
+Dockerfile @telkombe
+docker-compose.yaml @telkombe
+/scripts/ @telkombe

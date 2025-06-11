@@ -30,18 +30,18 @@ LABEL org.opencontainers.image.vendor="Ege Kocabaş"
 LABEL com.docker.desktop.extension.api.version="0.3.4"
 LABEL com.docker.extension.categories="utility-tools,container-orchestration"
 LABEL com.docker.extension.account-info=""
-LABEL com.docker.desktop.extension.icon="https://raw.githubusercontent.com/anubissbe/remote-docker/refs/heads/main/assets/extension-icon.svg"
+LABEL com.docker.desktop.extension.icon="https://raw.githubusercontent.com/telkombe/remote-docker/refs/heads/main/assets/extension-icon.svg"
 LABEL com.docker.extension.screenshots="[\
-    {\"alt\": \"Dashboard\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/01_dashboard.png\"},\
-    {\"alt\": \"Containers\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/02_containers.png\"}, \
-    {\"alt\": \"Compose logs\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/03_compose_logs.png\"}, \
-    {\"alt\": \"Images\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/04_images.png\"}, \
-    {\"alt\": \"Volumes\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/05_volumes.png\"}, \
-    {\"alt\": \"Networks\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/06_networks.png\"}, \
-    {\"alt\": \"Environments\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/07_environments.png\"}, \
-    {\"alt\": \"Environment Selection\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/08_environment_selection.png\"}, \
-    {\"alt\": \"Disconnect\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/09_disconnect.png\"}, \
-    {\"alt\": \"Container Logs\", \"url\": \"https:\/\/raw.githubusercontent.com\/anubissbe\/remote-docker\/refs\/heads\/main\/assets\/10_container_logs.png\"}]"
+    {\"alt\": \"Dashboard\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/01_dashboard.png\"},\
+    {\"alt\": \"Containers\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/02_containers.png\"}, \
+    {\"alt\": \"Compose logs\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/03_compose_logs.png\"}, \
+    {\"alt\": \"Images\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/04_images.png\"}, \
+    {\"alt\": \"Volumes\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/05_volumes.png\"}, \
+    {\"alt\": \"Networks\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/06_networks.png\"}, \
+    {\"alt\": \"Environments\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/07_environments.png\"}, \
+    {\"alt\": \"Environment Selection\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/08_environment_selection.png\"}, \
+    {\"alt\": \"Disconnect\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/09_disconnect.png\"}, \
+    {\"alt\": \"Container Logs\", \"url\": \"https:\/\/raw.githubusercontent.com\/telkombe\/remote-docker\/refs\/heads\/main\/assets\/10_container_logs.png\"}]"
 LABEL com.docker.extension.detailed-description="\
     A Docker Desktop extension that brings remote Docker management with a user-friendly UI.<br><br>\
     <b>Key Features:</b><br><br>\
@@ -64,10 +64,10 @@ LABEL com.docker.extension.detailed-description="\
     - Configure remote environments<br>\
     - Select a remote instance and start managing Docker remotely<br><br>\
     <b>Warning:</b> Use this extension at your own risk. Always review the code and validate actions before running or installing it.<br><br>"
-LABEL com.docker.extension.publisher-url="https://github.com/anubissbe/remote-docker"
+LABEL com.docker.extension.publisher-url="https://github.com/telkombe/remote-docker"
 LABEL com.docker.extension.additional-urls="\
-    [{\"title\":\"GitHub\",\"url\":\"https:\/\/github.com\/anubissbe\/remote-docker\"},\
-    {\"title\":\"MIT License\",\"url\":\"https://github.com/anubissbe/remote-docker/blob/main/LICENSE\"}]"
+    [{\"title\":\"GitHub\",\"url\":\"https:\/\/github.com\/telkombe\/remote-docker\"},\
+    {\"title\":\"MIT License\",\"url\":\"https://github.com/telkombe/remote-docker/blob/main/LICENSE\"}]"
 LABEL com.docker.extension.changelog="<ul><li>Initial release</li></ul>"
 
 

@@ -7,7 +7,7 @@ Welcome to the Remote Docker Extension! This guide will help you get started wit
 Install the extension from Docker Desktop or using the command line:
 
 ```bash
-docker extension install anubissbe/remote-docker:latest
+docker extension install telkombe/remote-docker:latest
 ```
 
 ## Getting Started

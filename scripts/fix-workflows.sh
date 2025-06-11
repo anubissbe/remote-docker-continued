@@ -36,7 +36,7 @@ echo "✓ Fixed security.yml"
 
 # Fix release.yml - update deprecated action
 sed -i.bak 's/actions\/create-release@v1/softprops\/action-gh-release@v2/g' .github/workflows/release.yml
-sed -i 's/anubissbe\/remote-docker/${{ github.repository }}/g' .github/workflows/release.yml
+sed -i 's/telkombe\/remote-docker/${{ github.repository }}/g' .github/workflows/release.yml
 echo "✓ Fixed release.yml"
 
 # Fix docker-publish-retry.yml - standardize secret names

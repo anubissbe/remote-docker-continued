@@ -36,18 +36,18 @@ push:
 # Install extension
 install:
 	@echo "Installing extension..."
-	docker extension install anubissbe/remote-docker:latest
+	docker extension install telkombe/remote-docker:latest
 
 # Uninstall extension
 uninstall:
 	@echo "Uninstalling extension..."
-	docker extension rm anubissbe/remote-docker
+	docker extension rm telkombe/remote-docker
 
 # Development build and install
 dev: build
 	@echo "Installing development build..."
-	-docker extension rm anubissbe/remote-docker 2>/dev/null || true
-	docker extension install anubissbe/remote-docker
+	-docker extension rm telkombe/remote-docker 2>/dev/null || true
+	docker extension install telkombe/remote-docker
 
 # Clean build artifacts
 clean:

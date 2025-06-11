@@ -88,7 +88,7 @@ linters-settings:
     statements: 50
     
   gci:
-    local-prefixes: github.com/anubissbe/remote-docker
+    local-prefixes: github.com/telkombe/remote-docker
     
   goconst:
     min-len: 2
@@ -112,7 +112,7 @@ linters-settings:
     min-complexity: 15
     
   goimports:
-    local-prefixes: github.com/anubissbe/remote-docker
+    local-prefixes: github.com/telkombe/remote-docker
     
   gomnd:
     settings:

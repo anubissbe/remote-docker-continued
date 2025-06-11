@@ -18,7 +18,7 @@ The Remote Docker team takes security vulnerabilities seriously. We appreciate y
 1. **Do not** open a public GitHub issue for security vulnerabilities
 2. **Do** send a detailed report to the repository owner via:
    - GitHub Security Advisories (preferred)
-   - Direct message to [@anubissbe](https://github.com/anubissbe)
+   - Direct message to [@telkombe](https://github.com/telkombe)
 
 ### What to Include
 
@@ -75,4 +75,4 @@ We use automated tools to monitor dependencies:
 - **Security Scanning**: Regular scans using Trivy and other tools
 - **Audit Checks**: npm audit and Go vulnerability checks in CI/CD
 
-For questions about this policy, please contact [@anubissbe](https://github.com/anubissbe).
+For questions about this policy, please contact [@telkombe](https://github.com/telkombe).

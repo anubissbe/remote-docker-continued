@@ -9,38 +9,38 @@
 </p>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/anubissbe/remote-docker">
-    <img src="https://img.shields.io/docker/v/anubissbe/remote-docker?sort=semver&style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Hub&color=2496ED" alt="Docker Hub">
+  <a href="https://hub.docker.com/r/telkombe/remote-docker">
+    <img src="https://img.shields.io/docker/v/telkombe/remote-docker?sort=semver&style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Hub&color=2496ED" alt="Docker Hub">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued/blob/main/LICENSE">
+  <a href="https://github.com/telkombe/remote-docker-continued/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=for-the-badge&logo=opensource&logoColor=white" alt="MIT License">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued/releases">
-    <img src="https://img.shields.io/github/v/release/anubissbe/remote-docker-continued?style=for-the-badge&logo=github&logoColor=white&label=Release&color=28a745" alt="Latest Release">
+  <a href="https://github.com/telkombe/remote-docker-continued/releases">
+    <img src="https://img.shields.io/github/v/release/telkombe/remote-docker-continued?style=for-the-badge&logo=github&logoColor=white&label=Release&color=28a745" alt="Latest Release">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/anubissbe/remote-docker-continued/actions/workflows/test.yml">
+  <a href="https://github.com/telkombe/remote-docker-continued/actions/workflows/test.yml">
     <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white" alt="Tests Passing">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued/actions/workflows/security.yml">
+  <a href="https://github.com/telkombe/remote-docker-continued/actions/workflows/security.yml">
     <img src="https://img.shields.io/badge/Security-Scanned-brightgreen?style=for-the-badge&logo=security&logoColor=white" alt="Security Scanned">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued">
+  <a href="https://github.com/telkombe/remote-docker-continued">
     <img src="https://img.shields.io/badge/Maintained-Yes-brightgreen?style=for-the-badge&logo=github&logoColor=white" alt="Actively Maintained">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/anubissbe/remote-docker-continued/stargazers">
-    <img src="https://img.shields.io/github/stars/anubissbe/remote-docker-continued?style=for-the-badge&logo=star&logoColor=white&color=FFD700" alt="GitHub Stars">
+  <a href="https://github.com/telkombe/remote-docker-continued/stargazers">
+    <img src="https://img.shields.io/github/stars/telkombe/remote-docker-continued?style=for-the-badge&logo=star&logoColor=white&color=FFD700" alt="GitHub Stars">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued/network/members">
-    <img src="https://img.shields.io/github/forks/anubissbe/remote-docker-continued?style=for-the-badge&logo=git&logoColor=white&color=orange" alt="GitHub Forks">
+  <a href="https://github.com/telkombe/remote-docker-continued/network/members">
+    <img src="https://img.shields.io/github/forks/telkombe/remote-docker-continued?style=for-the-badge&logo=git&logoColor=white&color=orange" alt="GitHub Forks">
   </a>
-  <a href="https://github.com/anubissbe/remote-docker-continued/issues">
-    <img src="https://img.shields.io/github/issues/anubissbe/remote-docker-continued?style=for-the-badge&logo=github&logoColor=white&color=brightgreen" alt="GitHub Issues">
+  <a href="https://github.com/telkombe/remote-docker-continued/issues">
+    <img src="https://img.shields.io/github/issues/telkombe/remote-docker-continued?style=for-the-badge&logo=github&logoColor=white&color=brightgreen" alt="GitHub Issues">
   </a>
 </p>
 
@@ -50,11 +50,11 @@
 
 <div align="center">
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/anubissbe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/anubissbe/remote-docker)
-[![Docker Image Size](https://img.shields.io/docker/image-size/anubissbe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/anubissbe/remote-docker)
-[![Extension Rating](https://img.shields.io/badge/Extension%20Rating-⭐⭐⭐⭐⭐-brightgreen?style=flat-square&logo=star)](https://hub.docker.com/r/anubissbe/remote-docker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/telkombe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/telkombe/remote-docker)
+[![Docker Image Size](https://img.shields.io/docker/image-size/telkombe/remote-docker?style=flat-square&color=brightgreen&logo=docker&logoColor=white)](https://hub.docker.com/r/telkombe/remote-docker)
+[![Extension Rating](https://img.shields.io/badge/Extension%20Rating-⭐⭐⭐⭐⭐-brightgreen?style=flat-square&logo=star)](https://hub.docker.com/r/telkombe/remote-docker)
 [![Platform Support](https://img.shields.io/badge/Platform-Docker%20Desktop-brightgreen?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
-[![SSH Secure](https://img.shields.io/badge/SSH-Secure%20Tunnels-brightgreen?style=flat-square&logo=ssh&logoColor=white)](https://github.com/anubissbe/remote-docker-continued#security)
+[![SSH Secure](https://img.shields.io/badge/SSH-Secure%20Tunnels-brightgreen?style=flat-square&logo=ssh&logoColor=white)](https://github.com/telkombe/remote-docker-continued#security)
 
 </div>
 
@@ -144,26 +144,26 @@ This is a friendly fork and continuation of the excellent work done by [@egekoca
 ### From Docker Hub
 
 ```bash
-docker extension install anubissbe/remote-docker:latest
+docker extension install telkombe/remote-docker:latest
 ```
 
 ### From Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/anubissbe/remote-docker-continued.git
+git clone https://github.com/telkombe/remote-docker-continued.git
 cd remote-docker-continued
 
 # Build and install locally
 make build
-docker extension install anubissbe/remote-docker:latest
+docker extension install telkombe/remote-docker:latest
 ```
 
 ### Development Installation
 
 ```bash
 # Clone and setup development environment
-git clone https://github.com/anubissbe/remote-docker-continued.git
+git clone https://github.com/telkombe/remote-docker-continued.git
 cd remote-docker-continued
 
 # Install dependencies
@@ -232,7 +232,7 @@ ssh username@remote-host docker version
 ### Building from Source
 ```bash
 # Clone the repository
-git clone https://github.com/anubissbe/remote-docker-continued.git
+git clone https://github.com/telkombe/remote-docker-continued.git
 cd remote-docker-continued
 
 # Install dependencies
@@ -267,7 +267,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - Feature requests
 
 ### Good First Issues
-Check out our [good first issues](https://github.com/anubissbe/remote-docker-continued/labels/good%20first%20issue) for ways to get started.
+Check out our [good first issues](https://github.com/telkombe/remote-docker-continued/labels/good%20first%20issue) for ways to get started.
 
 ## 📄 License
 
@@ -283,10 +283,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/anubissbe/remote-docker-continued/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/anubissbe/remote-docker-continued/discussions)
+- **Issues**: [GitHub Issues](https://github.com/telkombe/remote-docker-continued/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/telkombe/remote-docker-continued/discussions)
 - **Security**: [Security Policy](SECURITY.md)
-- **Docker Hub**: [anubissbe/remote-docker](https://hub.docker.com/r/anubissbe/remote-docker)
+- **Docker Hub**: [telkombe/remote-docker](https://hub.docker.com/r/telkombe/remote-docker)
 
 ## ⚠️ Important Notice
 
@@ -312,7 +312,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 </p>
 
 <p align="center">
-  <a href="https://github.com/anubissbe/remote-docker-continued">
+  <a href="https://github.com/telkombe/remote-docker-continued">
     <img src="https://img.shields.io/badge/Remote%20Docker-Continued-brightgreen?style=for-the-badge&logo=docker" alt="Remote Docker Continued">
   </a>
 </p>

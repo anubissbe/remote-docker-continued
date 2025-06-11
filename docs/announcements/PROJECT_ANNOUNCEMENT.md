@@ -13,14 +13,14 @@ We are excited to announce that **Remote Docker** is now **Remote Docker Continu
 
 ### 🔄 What's Changed
 
-- **Repository**: Now at `github.com/anubissbe/remote-docker-continued`
+- **Repository**: Now at `github.com/telkombe/remote-docker-continued`
 - **Project Name**: Remote Docker Continued
 - **Governance**: Community-driven with open contribution model
 - **Support**: Active community support through GitHub Issues and Discussions
 
 ### ✅ What Stays the Same
 
-- **Docker Hub**: Still available at `anubissbe/remote-docker`
+- **Docker Hub**: Still available at `telkombe/remote-docker`
 - **Functionality**: All existing features continue to work
 - **Compatibility**: Works with all Docker Desktop versions 4.8.0+
 - **License**: Remains MIT licensed and open source
@@ -46,8 +46,8 @@ We are excited to announce that **Remote Docker** is now **Remote Docker Continu
 
 This is YOUR project now! We welcome:
 - **Contributors**: Check our [Contributing Guide](CONTRIBUTING.md)
-- **Bug Reports**: File issues on [GitHub](https://github.com/anubissbe/remote-docker-continued/issues)
-- **Feature Requests**: Join the [Discussions](https://github.com/anubissbe/remote-docker-continued/discussions)
+- **Bug Reports**: File issues on [GitHub](https://github.com/telkombe/remote-docker-continued/issues)
+- **Feature Requests**: Join the [Discussions](https://github.com/telkombe/remote-docker-continued/discussions)
 - **Sponsors**: Support the project through GitHub Sponsors
 
 ### 🙏 Acknowledgments
@@ -56,10 +56,10 @@ Special thanks to [@egekocabas](https://github.com/egekocabas) for creating the 
 
 ### 📞 Contact
 
-- **Repository**: [github.com/anubissbe/remote-docker-continued](https://github.com/anubissbe/remote-docker-continued)
-- **Issues**: [GitHub Issues](https://github.com/anubissbe/remote-docker-continued/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/anubissbe/remote-docker-continued/discussions)
-- **Docker Hub**: [anubissbe/remote-docker](https://hub.docker.com/r/anubissbe/remote-docker)
+- **Repository**: [github.com/telkombe/remote-docker-continued](https://github.com/telkombe/remote-docker-continued)
+- **Issues**: [GitHub Issues](https://github.com/telkombe/remote-docker-continued/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/telkombe/remote-docker-continued/discussions)
+- **Docker Hub**: [telkombe/remote-docker](https://hub.docker.com/r/telkombe/remote-docker)
 
 ---
 

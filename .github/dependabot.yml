@@ -9,9 +9,9 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 5
     reviewers:
-      - "anubissbe"
+      - "telkombe"
     assignees:
-      - "anubissbe"
+      - "telkombe"
     commit-message:
       prefix: "deps"
       include: "scope"
@@ -28,9 +28,9 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 5
     reviewers:
-      - "anubissbe"
+      - "telkombe"
     assignees:
-      - "anubissbe"
+      - "telkombe"
     commit-message:
       prefix: "deps"
       include: "scope"
@@ -47,9 +47,9 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 5
     reviewers:
-      - "anubissbe"
+      - "telkombe"
     assignees:
-      - "anubissbe"
+      - "telkombe"
     commit-message:
       prefix: "ci"
       include: "scope"
@@ -66,9 +66,9 @@ updates:
       time: "04:00"
     open-pull-requests-limit: 3
     reviewers:
-      - "anubissbe"
+      - "telkombe"
     assignees:
-      - "anubissbe"
+      - "telkombe"
     commit-message:
       prefix: "deps"
       include: "scope"

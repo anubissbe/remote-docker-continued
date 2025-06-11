@@ -47,7 +47,7 @@ Your Remote Docker extension repository is now fully configured with comprehensi
 - ✅ **Updated build scripts** - Proper image names and versioning
 
 ### 7. 🚀 GitHub Repository
-- ✅ **Pushed complete codebase** to https://github.com/anubissbe/remote-docker
+- ✅ **Pushed complete codebase** to https://github.com/telkombe/remote-docker
 - ✅ **Created release tags** v1.0.9, v1.0.10
 - ✅ **Triggered workflows** - All automation is active
 
@@ -102,13 +102,13 @@ Or manually configure:
 - Enable auto-delete of branches after merge
 
 ### 3. Monitor Workflows
-- Check https://github.com/anubissbe/remote-docker/actions
+- Check https://github.com/telkombe/remote-docker/actions
 - Ensure all workflows are passing
 - Review any security alerts in the Security tab
 
 ### 4. Docker Hub Cleanup (Optional)
 Clean up old test tags on Docker Hub:
-- Visit https://hub.docker.com/r/anubissbe/remote-docker/tags
+- Visit https://hub.docker.com/r/telkombe/remote-docker/tags
 - Delete test tags: `debug`, `test`, `debug-test`, `fixed`, `inline-test`, `minimal`, `fixed-path`
 
 ## 📊 Repository Health

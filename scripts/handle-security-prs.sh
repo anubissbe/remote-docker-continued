@@ -21,7 +21,7 @@ if ! command -v gh &> /dev/null; then
     echo -e "${BLUE}ℹ️  Install from: https://cli.github.com/${NC}"
     echo ""
     echo -e "${YELLOW}Manual Instructions:${NC}"
-    echo "1. Go to https://github.com/anubissbe/remote-docker/pulls"
+    echo "1. Go to https://github.com/telkombe/remote-docker/pulls"
     echo "2. Review and approve these security PRs:"
     echo "   - PR #6: Actions/upload-artifact bump (fixes ArtiPACKED vulnerability)"
     echo "   - PR #5: golang.org/x/net bump (fixes DoS vulnerabilities)"
@@ -76,31 +76,31 @@ for i in "${!SECURITY_PRS[@]}"; do
     echo -e "${BLUE}📝 Processing PR #${pr_num}: ${desc}${NC}"
     
     # Check if PR exists and is open
-    if ! gh pr view "$pr_num" --repo anubissbe/remote-docker &> /dev/null; then
+    if ! gh pr view "$pr_num" --repo telkombe/remote-docker &> /dev/null; then
         echo -e "${YELLOW}⚠️  PR #${pr_num} not found or already closed${NC}"
         continue
     fi
     
     # Check if already approved
-    pr_status=$(gh pr view "$pr_num" --repo anubissbe/remote-docker --json reviewDecision --jq '.reviewDecision')
+    pr_status=$(gh pr view "$pr_num" --repo telkombe/remote-docker --json reviewDecision --jq '.reviewDecision')
     
     if [ "$pr_status" != "APPROVED" ]; then
         echo -e "${BLUE}✅ Approving PR #${pr_num}...${NC}"
-        gh pr review "$pr_num" --approve --repo anubissbe/remote-docker --body "Approved: Critical security update - safe to merge despite CI/CD authentication failures."
+        gh pr review "$pr_num" --approve --repo telkombe/remote-docker --body "Approved: Critical security update - safe to merge despite CI/CD authentication failures."
     else
         echo -e "${GREEN}✅ PR #${pr_num} already approved${NC}"
     fi
     
     # Check if mergeable
-    is_mergeable=$(gh pr view "$pr_num" --repo anubissbe/remote-docker --json mergeable --jq '.mergeable')
+    is_mergeable=$(gh pr view "$pr_num" --repo telkombe/remote-docker --json mergeable --jq '.mergeable')
     
     if [ "$is_mergeable" = "MERGEABLE" ]; then
         echo -e "${BLUE}🔀 Merging PR #${pr_num}...${NC}"
-        gh pr merge "$pr_num" --squash --repo anubissbe/remote-docker --delete-branch
+        gh pr merge "$pr_num" --squash --repo telkombe/remote-docker --delete-branch
         echo -e "${GREEN}✅ PR #${pr_num} merged successfully${NC}"
     else
         echo -e "${YELLOW}⚠️  PR #${pr_num} is not mergeable - may have conflicts${NC}"
-        echo -e "${BLUE}ℹ️  Check the PR manually: https://github.com/anubissbe/remote-docker/pull/${pr_num}${NC}"
+        echo -e "${BLUE}ℹ️  Check the PR manually: https://github.com/telkombe/remote-docker/pull/${pr_num}${NC}"
     fi
     
     sleep 2  # Brief pause between operations

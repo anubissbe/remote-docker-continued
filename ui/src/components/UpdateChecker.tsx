@@ -121,7 +121,7 @@ const UpdateChecker: React.FC = () => {
         currentVersion: CURRENT_VERSION,
         latestVersion,
         isUpdateAvailable: isNewer,
-        releaseUrl: `https://hub.docker.com/r/anubissbe/remote-docker/tags`,
+        releaseUrl: `https://hub.docker.com/r/telkombe/remote-docker/tags`,
         publishedAt: latestTag.last_updated,
       };
 
@@ -149,7 +149,7 @@ const UpdateChecker: React.FC = () => {
 
     try {
       // Use Docker Desktop CLI to update the extension
-      const updateCommand = `docker extension update anubissbe/remote-docker:${updateInfo.latestVersion}`;
+      const updateCommand = `docker extension update telkombe/remote-docker:${updateInfo.latestVersion}`;
 
       // Show instructions since we can't directly execute the command
       setShowUpdateDialog(false);
@@ -303,7 +303,7 @@ const UpdateChecker: React.FC = () => {
                 wordBreak: 'break-all',
               }}
             >
-              docker extension update anubissbe/remote-docker:{updateInfo?.latestVersion}
+              docker extension update telkombe/remote-docker:{updateInfo?.latestVersion}
             </Box>
           </Alert>
 

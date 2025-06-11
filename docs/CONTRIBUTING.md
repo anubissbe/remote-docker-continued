@@ -20,7 +20,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](..
 
 ### Reporting Bugs
 
-1. Check existing [issues](https://github.com/anubissbe/remote-docker/issues) to avoid duplicates
+1. Check existing [issues](https://github.com/telkombe/remote-docker/issues) to avoid duplicates
 2. Use the bug report template
 3. Include:
    - Clear description of the issue
@@ -31,7 +31,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](..
 
 ### Suggesting Features
 
-1. Check the [discussions](https://github.com/anubissbe/remote-docker/discussions) for existing proposals
+1. Check the [discussions](https://github.com/telkombe/remote-docker/discussions) for existing proposals
 2. Create a new discussion with:
    - Clear use case
    - Proposed solution
@@ -244,7 +244,7 @@ docs(api): update endpoint documentation
 
 ## Questions?
 
-- Join our [Discussions](https://github.com/anubissbe/remote-docker/discussions)
+- Join our [Discussions](https://github.com/telkombe/remote-docker/discussions)
 - Reach out on [Discord](https://discord.gg/remote-docker)
 - Email: support@remote-docker.dev
 
