@@ -1,4 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import {
+  Search as SearchIcon,
+  Star as StarIcon,
+  Download as DownloadIcon,
+  Category as CategoryIcon,
+  Info as InfoIcon,
+  Folder as FolderIcon,
+  Storage as DockerIcon,
+  Terminal as TerminalIcon,
+  Settings as SettingsIcon,
+  Cloud as CloudIcon,
+  DataObject as DatabaseIcon,
+  GitHub as GitIcon,
+  Monitor as MonitoringIcon,
+  Psychology as AIIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -28,23 +44,8 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Star as StarIcon,
-  Download as DownloadIcon,
-  Category as CategoryIcon,
-  Info as InfoIcon,
-  Folder as FolderIcon,
-  Storage as DockerIcon,
-  Terminal as TerminalIcon,
-  Settings as SettingsIcon,
-  Cloud as CloudIcon,
-  DataObject as DatabaseIcon,
-  GitHub as GitIcon,
-  Monitor as MonitoringIcon,
-  Psychology as AIIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+
 import { ddClient } from '../../utils/ddClient';
 
 interface CatalogItem {
@@ -97,19 +98,25 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
   const loadCatalog = async (page: number = 1, search: string = '', category: string = 'all') => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const params = new URLSearchParams();
       params.append('page', page.toString());
-      if (search) params.append('search', search);
-      if (category && category !== 'all') params.append('category', category);
-      
+      if (search) {
+        params.append('search', search);
+      }
+      if (category && category !== 'all') {
+        params.append('category', category);
+      }
+
       console.log('Loading MCP catalog with params:', params.toString());
-      const response = await ddClient.extension?.vm?.service?.get(`/mcp/catalog?${params.toString()}`);
-      
+      const response = await ddClient.extension?.vm?.service?.get(
+        `/mcp/catalog?${params.toString()}`,
+      );
+
       console.log('MCP catalog raw response:', response);
       console.log('Response type:', typeof response);
-      
+
       // Handle Docker Desktop API response wrapping
       let catalogData = response;
       if (response && typeof response === 'object') {
@@ -118,7 +125,7 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
           catalogData = response.data;
           console.log('Extracted catalog data from wrapper:', catalogData);
         }
-        
+
         // Parse if it's a string
         if (typeof catalogData === 'string') {
           try {
@@ -129,11 +136,15 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
             throw new Error('Invalid JSON response from catalog API');
           }
         }
-        
+
         // Validate the structure
         if (catalogData && typeof catalogData === 'object' && 'items' in catalogData) {
           setCatalog(catalogData as CatalogResponse);
-          console.log('Successfully set catalog with', (catalogData as CatalogResponse).items?.length || 0, 'items');
+          console.log(
+            'Successfully set catalog with',
+            (catalogData as CatalogResponse).items?.length || 0,
+            'items',
+          );
         } else {
           console.error('Invalid catalog response structure:', catalogData);
           throw new Error('Invalid catalog response structure');
@@ -143,7 +154,9 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
       }
     } catch (err) {
       console.error('Error loading MCP catalog:', err);
-      setError('Failed to load MCP catalog: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setError(
+        'Failed to load MCP catalog: ' + (err instanceof Error ? err.message : 'Unknown error'),
+      );
     } finally {
       setLoading(false);
     }
@@ -196,191 +209,197 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
     try {
       setInstallLog([]); // Clear previous logs
       const addLog = (message: string) => {
-        setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+        setInstallLog((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
       };
-      
+
       addLog('Install button clicked');
       addLog(`Environment: ${currentEnv?.name || 'None'}`);
       addLog(`Server: ${selectedItem?.name || 'None'}`);
-      
+
       if (!currentEnv || !selectedItem) {
         addLog('❌ ERROR: Missing environment or server selection');
         setError('Missing environment or server selection');
         return;
       }
-      
+
       addLog(`Starting installation of ${selectedItem.name}`);
       setInstalling(selectedItem.full_name);
-      
+
       try {
-      const request = {
-        fullName: selectedItem.full_name,
-        name: customName || selectedItem.name,
-        username: currentEnv.username,
-        hostname: currentEnv.hostname,
-        autoStart: true,
-      };
-      
-      addLog('Sending install request to backend...');
-      addLog(`Request: ${JSON.stringify(request, null, 2)}`);
-      
-      // Check if ddClient is available
-      if (!ddClient) {
-        addLog('❌ ERROR: ddClient is null or undefined');
-        throw new Error('Docker Desktop client not initialized');
-      }
-      
-      if (!ddClient.extension) {
-        addLog('❌ ERROR: ddClient.extension is undefined');
-        throw new Error('Docker Desktop extension not available');
-      }
-      
-      if (!ddClient.extension.vm) {
-        addLog('❌ ERROR: ddClient.extension.vm is undefined');
-        throw new Error('Docker Desktop VM service not available');
-      }
-      
-      if (!ddClient.extension.vm.service) {
-        addLog('❌ ERROR: ddClient.extension.vm.service is undefined');
-        throw new Error('Docker Desktop service API not available');
-      }
-      
-      addLog('Docker Desktop client is available');
-      
-      // Test if API works with a known endpoint
-      addLog('Testing API with /mcp/servers endpoint first...');
-      try {
-        const testResponse = await ddClient.extension.vm.service.get('/mcp/servers');
-        addLog('✅ Test API call successful - API is working');
-      } catch (testErr) {
-        addLog(`❌ Test API call failed: ${testErr}`);
-        addLog('API might not be working properly');
-      }
-      
-      addLog('Calling POST /mcp/catalog/install...');
-      
-      let response;
-      try {
-        addLog('About to call ddClient.extension.vm.service.post...');
-        
-        // Test with a simple direct call first
-        addLog('Making direct API call without timeout...');
-        
-        // Try to catch any synchronous errors
-        let apiCallPromise;
+        const request = {
+          fullName: selectedItem.full_name,
+          name: customName || selectedItem.name,
+          username: currentEnv.username,
+          hostname: currentEnv.hostname,
+          autoStart: true,
+        };
+
+        addLog('Sending install request to backend...');
+        addLog(`Request: ${JSON.stringify(request, null, 2)}`);
+
+        // Check if ddClient is available
+        if (!ddClient) {
+          addLog('❌ ERROR: ddClient is null or undefined');
+          throw new Error('Docker Desktop client not initialized');
+        }
+
+        if (!ddClient.extension) {
+          addLog('❌ ERROR: ddClient.extension is undefined');
+          throw new Error('Docker Desktop extension not available');
+        }
+
+        if (!ddClient.extension.vm) {
+          addLog('❌ ERROR: ddClient.extension.vm is undefined');
+          throw new Error('Docker Desktop VM service not available');
+        }
+
+        if (!ddClient.extension.vm.service) {
+          addLog('❌ ERROR: ddClient.extension.vm.service is undefined');
+          throw new Error('Docker Desktop service API not available');
+        }
+
+        addLog('Docker Desktop client is available');
+
+        // Test if API works with a known endpoint
+        addLog('Testing API with /mcp/servers endpoint first...');
         try {
-          apiCallPromise = ddClient.extension.vm.service.post('/mcp/catalog/install', request);
-          addLog('API call initiated successfully');
-        } catch (syncErr) {
-          addLog(`❌ Synchronous error creating API call: ${syncErr}`);
-          throw syncErr;
+          const testResponse = await ddClient.extension.vm.service.get('/mcp/servers');
+          addLog('✅ Test API call successful - API is working');
+        } catch (testErr) {
+          addLog(`❌ Test API call failed: ${testErr}`);
+          addLog('API might not be working properly');
         }
-        
-        // Check if it's actually a promise
-        if (!apiCallPromise || typeof apiCallPromise.then !== 'function') {
-          addLog(`❌ API call did not return a promise. Type: ${typeof apiCallPromise}`);
-          throw new Error('API call did not return a promise');
-        }
-        
-        addLog('Waiting for API response...');
-        
-        // Use a manual timeout approach
-        let timeoutId;
-        const timeoutPromise = new Promise((_, reject) => {
-          timeoutId = setTimeout(() => {
-            addLog('⏱️ Timeout triggered after 5 seconds');
-            reject(new Error('API call timeout after 5 seconds'));
-          }, 5000);
-        });
-        
+
+        addLog('Calling POST /mcp/catalog/install...');
+
+        let response;
         try {
-          response = await Promise.race([apiCallPromise, timeoutPromise]);
-          clearTimeout(timeoutId);
-          addLog('API call completed successfully');
-        } catch (raceErr) {
-          clearTimeout(timeoutId);
-          throw raceErr;
+          addLog('About to call ddClient.extension.vm.service.post...');
+
+          // Test with a simple direct call first
+          addLog('Making direct API call without timeout...');
+
+          // Try to catch any synchronous errors
+          let apiCallPromise;
+          try {
+            apiCallPromise = ddClient.extension.vm.service.post('/mcp/catalog/install', request);
+            addLog('API call initiated successfully');
+          } catch (syncErr) {
+            addLog(`❌ Synchronous error creating API call: ${syncErr}`);
+            throw syncErr;
+          }
+
+          // Check if it's actually a promise
+          if (!apiCallPromise || typeof apiCallPromise.then !== 'function') {
+            addLog(`❌ API call did not return a promise. Type: ${typeof apiCallPromise}`);
+            throw new Error('API call did not return a promise');
+          }
+
+          addLog('Waiting for API response...');
+
+          // Use a manual timeout approach
+          let timeoutId;
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              addLog('⏱️ Timeout triggered after 5 seconds');
+              reject(new Error('API call timeout after 5 seconds'));
+            }, 5000);
+          });
+
+          try {
+            response = await Promise.race([apiCallPromise, timeoutPromise]);
+            clearTimeout(timeoutId);
+            addLog('API call completed successfully');
+          } catch (raceErr) {
+            clearTimeout(timeoutId);
+            throw raceErr;
+          }
+        } catch (apiErr) {
+          addLog(`❌ API call failed: ${apiErr}`);
+          addLog(`Error type: ${typeof apiErr}`);
+          addLog(`Error name: ${apiErr instanceof Error ? apiErr.name : 'Not an Error object'}`);
+          addLog(`Error message: ${apiErr instanceof Error ? apiErr.message : String(apiErr)}`);
+          addLog(`Error stack: ${apiErr instanceof Error ? apiErr.stack : 'No stack trace'}`);
+
+          // Check if it's a specific Docker Desktop error
+          if (apiErr && typeof apiErr === 'object') {
+            addLog(`Error object keys: ${Object.keys(apiErr).join(', ')}`);
+            addLog(`Error object: ${JSON.stringify(apiErr, null, 2)}`);
+          }
+
+          throw apiErr;
         }
-      } catch (apiErr) {
-        addLog(`❌ API call failed: ${apiErr}`);
-        addLog(`Error type: ${typeof apiErr}`);
-        addLog(`Error name: ${apiErr instanceof Error ? apiErr.name : 'Not an Error object'}`);
-        addLog(`Error message: ${apiErr instanceof Error ? apiErr.message : String(apiErr)}`);
-        addLog(`Error stack: ${apiErr instanceof Error ? apiErr.stack : 'No stack trace'}`);
-        
-        // Check if it's a specific Docker Desktop error
-        if (apiErr && typeof apiErr === 'object') {
-          addLog(`Error object keys: ${Object.keys(apiErr).join(', ')}`);
-          addLog(`Error object: ${JSON.stringify(apiErr, null, 2)}`);
+
+        addLog('Received response from backend');
+        addLog(`Response type: ${typeof response}`);
+        addLog(`Response: ${JSON.stringify(response, null, 2)}`);
+
+        // Check if response indicates success
+        if (!response) {
+          throw new Error('No response from install endpoint');
         }
-        
-        throw apiErr;
-      }
-      
-      addLog('Received response from backend');
-      addLog(`Response type: ${typeof response}`);
-      addLog(`Response: ${JSON.stringify(response, null, 2)}`);
-      
-      // Check if response indicates success
-      if (!response) {
-        throw new Error('No response from install endpoint');
-      }
-      
-      // Handle wrapped response
-      let actualResponse: any = response;
-      if (response && typeof response === 'object' && 'data' in response) {
-        actualResponse = (response as any).data;
-        addLog('Extracted data from wrapped response');
-      }
-      
-      addLog(`Actual response: ${JSON.stringify(actualResponse, null, 2)}`);
-      
-      // Check for error in response
-      if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
-        throw new Error(actualResponse.error);
-      }
-      
-      ddClient.desktopUI?.toast?.success(`Installing ${selectedItem.name}...`);
-      addLog('✅ Installation request sent successfully');
-      addLog('Note: Installation happens in the background. Check MCP Servers list for status.');
-      
-      // Keep dialog open for a moment to show success
-      setTimeout(() => {
-        setInstallDialogOpen(false);
-        setSelectedItem(null);
-        setCustomName('');
-        setInstallLog([]);
-        
-        if (onInstallComplete) {
-          onInstallComplete();
+
+        // Handle wrapped response
+        let actualResponse: any = response;
+        if (response && typeof response === 'object' && 'data' in response) {
+          actualResponse = (response as any).data;
+          addLog('Extracted data from wrapped response');
         }
-      }, 3000);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      addLog(`❌ ERROR: ${errorMessage}`);
-      addLog(`Error stack: ${err instanceof Error ? err.stack : 'No stack trace'}`);
-      setError(`Failed to install: ${errorMessage}`);
-      ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + errorMessage);
-    } finally {
-      setInstalling(null);
-    }
+
+        addLog(`Actual response: ${JSON.stringify(actualResponse, null, 2)}`);
+
+        // Check for error in response
+        if (actualResponse && typeof actualResponse === 'object' && 'error' in actualResponse) {
+          throw new Error(actualResponse.error);
+        }
+
+        ddClient.desktopUI?.toast?.success(`Installing ${selectedItem.name}...`);
+        addLog('✅ Installation request sent successfully');
+        addLog('Note: Installation happens in the background. Check MCP Servers list for status.');
+
+        // Keep dialog open for a moment to show success
+        setTimeout(() => {
+          setInstallDialogOpen(false);
+          setSelectedItem(null);
+          setCustomName('');
+          setInstallLog([]);
+
+          if (onInstallComplete) {
+            onInstallComplete();
+          }
+        }, 3000);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        addLog(`❌ ERROR: ${errorMessage}`);
+        addLog(`Error stack: ${err instanceof Error ? err.stack : 'No stack trace'}`);
+        setError(`Failed to install: ${errorMessage}`);
+        ddClient.desktopUI?.toast?.error('Failed to install MCP server: ' + errorMessage);
+      } finally {
+        setInstalling(null);
+      }
     } catch (outerErr) {
       // Catch any errors that weren't caught in the inner try-catch
       const addLog = (message: string) => {
-        setInstallLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+        setInstallLog((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
       };
       addLog(`❌ UNCAUGHT ERROR: ${outerErr}`);
       addLog(`Error type: ${typeof outerErr}`);
       addLog(`Error details: ${outerErr instanceof Error ? outerErr.stack : String(outerErr)}`);
-      setError(`Unexpected error: ${outerErr instanceof Error ? outerErr.message : String(outerErr)}`);
+      setError(
+        `Unexpected error: ${outerErr instanceof Error ? outerErr.message : String(outerErr)}`,
+      );
       setInstalling(null);
     }
   };
 
   // Format numbers
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
     return num.toString();
   };
 
@@ -412,7 +431,7 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
           sx={{ flexGrow: 1 }}
           size="small"
         />
-        
+
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
           <Select
@@ -422,7 +441,7 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
             startAdornment={<CategoryIcon sx={{ mr: 1, ml: -0.5 }} />}
           >
             <MenuItem value="all">All Categories</MenuItem>
-            {catalog?.categories.map(cat => (
+            {catalog?.categories.map((cat) => (
               <MenuItem key={cat} value={cat}>
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </MenuItem>
@@ -467,36 +486,32 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
                         <Chip label="Quick Install" size="small" color="success" />
                       )}
                     </Stack>
-                    
+
                     <Typography variant="body2" color="textSecondary" gutterBottom>
                       by {item.publisher}
                     </Typography>
-                    
+
                     <Typography variant="body2" sx={{ mb: 2 }}>
                       {item.description}
                     </Typography>
-                    
+
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <StarIcon fontSize="small" color="action" />
-                        <Typography variant="caption">
-                          {formatNumber(item.star_count)}
-                        </Typography>
+                        <Typography variant="caption">{formatNumber(item.star_count)}</Typography>
                       </Stack>
-                      
+
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <DownloadIcon fontSize="small" color="action" />
-                        <Typography variant="caption">
-                          {formatNumber(item.pull_count)}
-                        </Typography>
+                        <Typography variant="caption">{formatNumber(item.pull_count)}</Typography>
                       </Stack>
-                      
+
                       <Typography variant="caption" color="textSecondary">
                         {item.tags.slice(0, 3).join(', ')}
                       </Typography>
                     </Stack>
                   </CardContent>
-                  
+
                   <CardActions>
                     <Button
                       size="small"
@@ -507,14 +522,22 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
                         setInstallDialogOpen(true);
                       }}
                       disabled={installing === item.full_name}
-                      startIcon={installing === item.full_name ? <CircularProgress size={16} /> : <DownloadIcon />}
+                      startIcon={
+                        installing === item.full_name ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <DownloadIcon />
+                        )
+                      }
                     >
                       {installing === item.full_name ? 'Installing...' : 'Install'}
                     </Button>
                     <Tooltip title="View on Docker Hub">
                       <IconButton
                         size="small"
-                        onClick={() => window.open(`https://hub.docker.com/r/${item.full_name}`, '_blank')}
+                        onClick={() =>
+                          window.open(`https://hub.docker.com/r/${item.full_name}`, '_blank')
+                        }
                       >
                         <InfoIcon fontSize="small" />
                       </IconButton>
@@ -557,11 +580,9 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
                 <Typography variant="subtitle2" gutterBottom>
                   {selectedItem.name}
                 </Typography>
-                <Typography variant="body2">
-                  {selectedItem.description}
-                </Typography>
+                <Typography variant="body2">{selectedItem.description}</Typography>
               </Alert>
-              
+
               <TextField
                 label="Installation Name"
                 value={customName}
@@ -570,42 +591,44 @@ const MCPCatalog: React.FC<MCPCatalogProps> = ({ currentEnv, onInstallComplete }
                 fullWidth
                 helperText="Give this server a custom name (optional)"
               />
-              
+
               <Typography variant="caption" color="textSecondary">
-                This will pull the image <code>{selectedItem.full_name}</code> and create a new MCP server instance.
+                This will pull the image <code>{selectedItem.full_name}</code> and create a new MCP
+                server instance.
               </Typography>
-              
+
               {/* Debug Log Display */}
               {installLog.length > 0 && (
                 <Paper sx={{ p: 2, bgcolor: 'grey.100', maxHeight: 300, overflow: 'auto' }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Installation Log:
                   </Typography>
-                  <Box component="pre" sx={{ 
-                    fontFamily: 'monospace', 
-                    fontSize: '0.875rem',
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word'
-                  }}>
+                  <Box
+                    component="pre"
+                    sx={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.875rem',
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                    }}
+                  >
                     {installLog.join('\n')}
                   </Box>
                 </Paper>
               )}
-              
-              {error && (
-                <Alert severity="error">
-                  {error}
-                </Alert>
-              )}
+
+              {error && <Alert severity="error">{error}</Alert>}
             </Stack>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            setInstallDialogOpen(false);
-            setInstallLog([]);
-            setError(null);
-          }}>
+          <Button
+            onClick={() => {
+              setInstallDialogOpen(false);
+              setInstallLog([]);
+              setError(null);
+            }}
+          >
             Cancel
           </Button>
           <Button

@@ -1,17 +1,9 @@
+import { ViewList as ViewListIcon, Store as StoreIcon } from '@mui/icons-material';
+import { Box, Tabs, Tab, Typography, Paper } from '@mui/material';
 import React, { useState } from 'react';
-import {
-  Box,
-  Tabs,
-  Tab,
-  Typography,
-  Paper,
-} from '@mui/material';
-import {
-  ViewList as ViewListIcon,
-  Store as StoreIcon,
-} from '@mui/icons-material';
-import MCPServers from './MCPServers';
+
 import MCPCatalog from './MCPCatalog';
+import MCPServers from './MCPServers';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -30,11 +22,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`mcp-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box>{children}</Box>}
     </div>
   );
 }
@@ -60,7 +48,7 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
     // Switch to installed servers tab after installation
     setTabValue(0);
     // Force refresh of the servers list
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -76,35 +64,32 @@ const MCPServersWithCatalog: React.FC<MCPServersWithCatalogProps> = ({ currentEn
             '& .MuiTab-root': {
               textTransform: 'none',
               minHeight: 48,
-            }
+            },
           }}
         >
-          <Tab 
-            label="Installed Servers" 
-            icon={<ViewListIcon />} 
+          <Tab
+            label="Installed Servers"
+            icon={<ViewListIcon />}
             iconPosition="start"
             id="mcp-tab-0"
             aria-controls="mcp-tabpanel-0"
           />
-          <Tab 
-            label="Browse Catalog" 
-            icon={<StoreIcon />} 
+          <Tab
+            label="Browse Catalog"
+            icon={<StoreIcon />}
             iconPosition="start"
             id="mcp-tab-1"
             aria-controls="mcp-tabpanel-1"
           />
         </Tabs>
-        
+
         <Box sx={{ p: 2 }}>
           <TabPanel value={tabValue} index={0}>
             <MCPServers key={refreshKey} currentEnv={currentEnv} />
           </TabPanel>
-          
+
           <TabPanel value={tabValue} index={1}>
-            <MCPCatalog 
-              currentEnv={currentEnv} 
-              onInstallComplete={handleInstallComplete}
-            />
+            <MCPCatalog currentEnv={currentEnv} onInstallComplete={handleInstallComplete} />
           </TabPanel>
         </Box>
       </Paper>

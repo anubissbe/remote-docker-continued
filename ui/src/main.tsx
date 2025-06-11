@@ -1,12 +1,12 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import CssBaseline from "@mui/material/CssBaseline";
-import { DockerMuiThemeProvider } from "@docker/docker-mui-theme";
+import { DockerMuiThemeProvider } from '@docker/docker-mui-theme';
+import CssBaseline from '@mui/material/CssBaseline';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 
 import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     {/*
       If you eject from MUI (which we don't recommend!), you should add
@@ -19,5 +19,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <App />
       </ErrorBoundary>
     </DockerMuiThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

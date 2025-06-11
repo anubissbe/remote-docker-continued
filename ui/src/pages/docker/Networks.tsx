@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InfoIcon from '@mui/icons-material/Info';
 import {
   Alert,
   Box,
@@ -14,10 +15,10 @@ import {
   Typography,
   Tooltip,
   IconButton,
-  Chip
+  Chip,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import InfoIcon from '@mui/icons-material/Info';
+import React, { useState, useEffect } from 'react';
+
 import { Environment, ExtensionSettings } from '../../App';
 import AutoRefreshControls from '../../components/AutoRefreshControls';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
@@ -169,7 +170,9 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
 
   // Delete a network
   const deleteNetwork = async (networkId: string) => {
-    if (!activeEnvironment) return;
+    if (!activeEnvironment) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
@@ -180,7 +183,7 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
       const response = await ddClient.extension.vm.service.post('/networks/remove', {
         hostname: activeEnvironment.hostname,
         username: activeEnvironment.username,
-        networkId
+        networkId,
       });
 
       // Docker Desktop API wraps the response
@@ -281,7 +284,7 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
                 backgroundColor: (theme) => theme.palette.background.default,
                 opacity: 0.5,
                 zIndex: 1,
-                borderRadius: 1
+                borderRadius: 1,
               }}
             >
               <CircularProgress />
@@ -352,9 +355,7 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
           </TableContainer>
         </Box>
       ) : !isLoading && activeEnvironment ? (
-        <Alert severity="info">
-          No networks found in the selected environment.
-        </Alert>
+        <Alert severity="info">No networks found in the selected environment.</Alert>
       ) : null}
 
       {/* Confirmation Dialog */}
@@ -362,7 +363,7 @@ const Networks: React.FC<NetworksProps> = ({ activeEnvironment, settings }) => {
         open={confirmDialogOpen}
         title="Delete Network"
         message={
-          "Are you sure you want to delete this network? Any containers still connected to this network will be disconnected."
+          'Are you sure you want to delete this network? Any containers still connected to this network will be disconnected.'
         }
         confirmText="Delete"
         confirmColor="error"

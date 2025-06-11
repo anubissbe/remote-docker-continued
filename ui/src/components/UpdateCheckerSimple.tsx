@@ -1,28 +1,20 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  Alert,
-  Stack,
-  Typography,
-  Chip,
-  Link,
-} from '@mui/material';
 import {
   Update as UpdateIcon,
   CheckCircle as CheckCircleIcon,
   OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
+import { Box, Button, Alert, Stack, Typography, Chip, Link } from '@mui/material';
+import React, { useState } from 'react';
 
 const UpdateCheckerSimple: React.FC = () => {
   const [showInstructions, setShowInstructions] = useState(false);
-  
+
   // Get current version from package.json
   const CURRENT_VERSION = '1.0.41';
-  
+
   const copyUpdateCommand = async () => {
     const command = `docker extension update telkombe/remote-docker:latest`;
-    
+
     try {
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(command);
@@ -44,7 +36,7 @@ const UpdateCheckerSimple: React.FC = () => {
           variant="outlined"
           icon={<CheckCircleIcon />}
         />
-        
+
         <Button
           variant="outlined"
           startIcon={<UpdateIcon />}
@@ -52,7 +44,7 @@ const UpdateCheckerSimple: React.FC = () => {
         >
           Check for Updates
         </Button>
-        
+
         <Link
           href="https://hub.docker.com/r/telkombe/remote-docker/tags"
           target="_blank"
@@ -63,10 +55,10 @@ const UpdateCheckerSimple: React.FC = () => {
           <OpenInNewIcon fontSize="small" />
         </Link>
       </Stack>
-      
+
       {showInstructions && (
-        <Alert 
-          severity="info" 
+        <Alert
+          severity="info"
           sx={{ mt: 2 }}
           action={
             <Button color="inherit" size="small" onClick={copyUpdateCommand}>

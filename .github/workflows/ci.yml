@@ -64,7 +64,7 @@ jobs:
       - name: Run ESLint
         run: |
           cd ui
-          npm run lint || echo "::warning::ESLint found issues"
+          npm run lint || echo "::warning::ESLint found issues - continuing with non-zero exit code"
           
   test:
     name: Test

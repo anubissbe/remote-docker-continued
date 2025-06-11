@@ -102,23 +102,25 @@ export function isMCPServerResponse(response: unknown): response is MCPServerRes
   if (typeof response !== 'object' || response === null) {
     return false;
   }
-  
+
   const r = response as MCPServerResponse;
-  return (
-    (Array.isArray(r.servers)) ||
+  return Boolean(
+    Array.isArray(r.servers) ||
     (r.data && Array.isArray(r.data.servers)) ||
     (r.result && Array.isArray(r.result.servers))
   );
 }
 
 export function extractMCPServers(response: unknown): MCPServer[] {
-  if (!response) return [];
-  
+  if (!response) {
+    return [];
+  }
+
   // Direct array
   if (Array.isArray(response)) {
     return response;
   }
-  
+
   // String response
   if (typeof response === 'string') {
     try {
@@ -128,13 +130,19 @@ export function extractMCPServers(response: unknown): MCPServer[] {
       return [];
     }
   }
-  
+
   // Object response
   if (isMCPServerResponse(response)) {
-    if (response.servers) return response.servers;
-    if (response.data?.servers) return response.data.servers;
-    if (response.result?.servers) return response.result.servers;
+    if (response.servers) {
+      return response.servers;
+    }
+    if (response.data?.servers) {
+      return response.data.servers;
+    }
+    if (response.result?.servers) {
+      return response.result.servers;
+    }
   }
-  
+
   return [];
 }

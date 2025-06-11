@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import AppsIcon from '@mui/icons-material/Apps';
+import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
+import ErrorIcon from '@mui/icons-material/Error';
+import InfoIcon from '@mui/icons-material/Info';
+import MemoryIcon from '@mui/icons-material/Memory';
+import NetworkCheckIcon from '@mui/icons-material/NetworkCheck';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import StorageIcon from '@mui/icons-material/Storage';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import WarningIcon from '@mui/icons-material/Warning';
 import {
   Alert,
   Box,
@@ -25,26 +34,26 @@ import {
   Typography,
   Skeleton,
   useTheme,
-  TablePagination
+  TablePagination,
 } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 
 // Charts
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
 
 // Icons
-import StorageIcon from '@mui/icons-material/Storage';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import NetworkCheckIcon from '@mui/icons-material/NetworkCheck';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import MemoryIcon from '@mui/icons-material/Memory';
-import WarningIcon from '@mui/icons-material/Warning';
-import ErrorIcon from '@mui/icons-material/Error';
-import InfoIcon from '@mui/icons-material/Info';
-import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
-import AppsIcon from '@mui/icons-material/Apps';
 
 import { Environment, ExtensionSettings } from '../App';
 import AutoRefreshControls from '../components/AutoRefreshControls';
@@ -143,7 +152,9 @@ function useDockerDesktopClient() {
 
 // Helper function to truncate container names
 const truncateContainerName = (name: string, maxLength: number = 20): string => {
-  if (!name) return '';
+  if (!name) {
+    return '';
+  }
 
   // Remove docker prefix if present
   let cleanName = name;
@@ -170,10 +181,10 @@ const truncateContainerName = (name: string, maxLength: number = 20): string => 
 };
 
 const Dashboard: React.FC<DashboardProps> = ({
-                                               activeEnvironment,
-                                               settings,
-                                               onSetActiveEnvironment
-                                             }) => {
+  activeEnvironment,
+  settings,
+  onSetActiveEnvironment,
+}) => {
   const theme = useTheme();
   const ddClient = useDockerDesktopClient();
 
@@ -273,7 +284,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       };
 
       // Load overview data
-      const overviewResponse = await ddClient.extension.vm.service.post('/dashboard/overview', requestPayload);
+      const overviewResponse = await ddClient.extension.vm.service.post(
+        '/dashboard/overview',
+        requestPayload,
+      );
       let overviewData = overviewResponse;
       if (overviewResponse && typeof overviewResponse === 'object' && 'data' in overviewResponse) {
         overviewData = overviewResponse.data;
@@ -284,9 +298,16 @@ const Dashboard: React.FC<DashboardProps> = ({
       setOverview(overviewData as DashboardOverview);
 
       // Load resource usage data
-      const resourcesResponse = await ddClient.extension.vm.service.post('/dashboard/resources', requestPayload);
+      const resourcesResponse = await ddClient.extension.vm.service.post(
+        '/dashboard/resources',
+        requestPayload,
+      );
       let resourcesData = resourcesResponse;
-      if (resourcesResponse && typeof resourcesResponse === 'object' && 'data' in resourcesResponse) {
+      if (
+        resourcesResponse &&
+        typeof resourcesResponse === 'object' &&
+        'data' in resourcesResponse
+      ) {
         resourcesData = resourcesResponse.data;
       }
       if (resourcesData && typeof resourcesData === 'object' && 'error' in resourcesData) {
@@ -295,9 +316,16 @@ const Dashboard: React.FC<DashboardProps> = ({
       setResources(resourcesData as ResourcesResponse);
 
       // Load system info
-      const systemInfoResponse = await ddClient.extension.vm.service.post('/dashboard/systeminfo', requestPayload);
+      const systemInfoResponse = await ddClient.extension.vm.service.post(
+        '/dashboard/systeminfo',
+        requestPayload,
+      );
       let systemInfoData = systemInfoResponse;
-      if (systemInfoResponse && typeof systemInfoResponse === 'object' && 'data' in systemInfoResponse) {
+      if (
+        systemInfoResponse &&
+        typeof systemInfoResponse === 'object' &&
+        'data' in systemInfoResponse
+      ) {
         systemInfoData = systemInfoResponse.data;
       }
       if (systemInfoData && typeof systemInfoData === 'object' && 'error' in systemInfoData) {
@@ -306,7 +334,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       setSystemInfo(systemInfoData as SystemInfoResponse);
 
       // Load events
-      const eventsResponse = await ddClient.extension.vm.service.post('/dashboard/events', requestPayload);
+      const eventsResponse = await ddClient.extension.vm.service.post(
+        '/dashboard/events',
+        requestPayload,
+      );
       let eventsData = eventsResponse;
       if (eventsResponse && typeof eventsResponse === 'object' && 'data' in eventsResponse) {
         eventsData = eventsResponse.data;
@@ -347,36 +378,40 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   // Resource Card Component
   const ResourceCard = ({
-                          icon,
-                          title,
-                          count,
-                          subtext,
-                          color = 'primary'
-                        }: {
+    icon,
+    title,
+    count,
+    subtext,
+    color = 'primary',
+  }: {
     icon: React.ReactNode;
     title: string;
     count: number | string;
     subtext?: string;
     color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   }) => (
-    <Card sx={{
-      height: '100%',
-      border: 1,
-      borderColor: 'divider',
-      boxShadow: 'none',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between'
-    }}>
+    <Card
+      sx={{
+        height: '100%',
+        border: 1,
+        borderColor: 'divider',
+        boxShadow: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
       <CardContent sx={{ p: 2, pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Box sx={{
-            mr: 1,
-            color: `${color}.main`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          <Box
+            sx={{
+              mr: 1,
+              color: `${color}.main`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {icon}
           </Box>
           <Typography variant="subtitle2" color="text.secondary">
@@ -405,10 +440,10 @@ const Dashboard: React.FC<DashboardProps> = ({
     return [...resources.containers]
       .sort((a, b) => b.cpuUsage - a.cpuUsage)
       .slice(0, 10) // Top 10 containers
-      .map(container => ({
+      .map((container) => ({
         ...container,
         // Create a shortened version for display
-        displayName: truncateContainerName(container.name)
+        displayName: truncateContainerName(container.name),
       }));
   };
 
@@ -428,10 +463,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
     return (
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-        >
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="displayName"
@@ -440,10 +472,21 @@ const Dashboard: React.FC<DashboardProps> = ({
             angle={-45}
             textAnchor="end"
           />
-          <YAxis yAxisId="cpu" orientation="left" label={{ value: 'CPU %', angle: -90, position: 'insideLeft' }} />
-          <YAxis yAxisId="memory" orientation="right" label={{ value: 'Memory %', angle: 90, position: 'insideRight' }} />
+          <YAxis
+            yAxisId="cpu"
+            orientation="left"
+            label={{ value: 'CPU %', angle: -90, position: 'insideLeft' }}
+          />
+          <YAxis
+            yAxisId="memory"
+            orientation="right"
+            label={{ value: 'Memory %', angle: 90, position: 'insideRight' }}
+          />
           <RechartsTooltip
-            formatter={(value, name) => [`${value}%`, name === 'cpuUsage' ? 'CPU Usage' : 'Memory Usage']}
+            formatter={(value, name) => [
+              `${value}%`,
+              name === 'cpuUsage' ? 'CPU Usage' : 'Memory Usage',
+            ]}
             labelFormatter={(label, items) => {
               // Find the original container name from the shortened display name
               const item = items[0]?.payload;
@@ -488,7 +531,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     // Apply pagination
     const paginatedContainers = sortedContainers.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
 
     return (
@@ -509,18 +552,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <TableRow key={container.id} hover>
                   <TableCell>
                     <Tooltip title={container.name}>
-                      <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        maxWidth: 200,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        <Typography
-                          noWrap
-                          variant="body2"
-                          sx={{ fontWeight: 'medium' }}
-                        >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          maxWidth: 200,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        <Typography noWrap variant="body2" sx={{ fontWeight: 'medium' }}>
                           {truncateContainerName(container.name)}
                         </Typography>
                       </Box>
@@ -530,7 +571,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <Chip
                       label={container.cpuPerc}
                       size="small"
-                      color={container.cpuUsage > 50 ? "warning" : "default"}
+                      color={container.cpuUsage > 50 ? 'warning' : 'default'}
                       variant="outlined"
                     />
                   </TableCell>
@@ -539,7 +580,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                       <Chip
                         label={container.memPerc}
                         size="small"
-                        color={container.memValue > 80 ? "error" : container.memValue > 50 ? "warning" : "default"}
+                        color={
+                          container.memValue > 80
+                            ? 'error'
+                            : container.memValue > 50
+                              ? 'warning'
+                              : 'default'
+                        }
                         variant="outlined"
                       />
                     </Tooltip>
@@ -605,9 +652,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                 thickness={5}
                 sx={{
                   color:
-                    item.value > 80 ? theme.palette.error.main :
-                      item.value > 60 ? theme.palette.warning.main :
-                        item.fill
+                    item.value > 80
+                      ? theme.palette.error.main
+                      : item.value > 60
+                        ? theme.palette.warning.main
+                        : item.fill,
                 }}
               />
               <Box
@@ -705,7 +754,10 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
 
     return (
-      <TableContainer component={Paper} sx={{ maxHeight: 300, boxShadow: 'none', border: 1, borderColor: 'divider' }}>
+      <TableContainer
+        component={Paper}
+        sx={{ maxHeight: 300, boxShadow: 'none', border: 1, borderColor: 'divider' }}
+      >
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -738,14 +790,25 @@ const Dashboard: React.FC<DashboardProps> = ({
                     size="small"
                     variant="outlined"
                     color={
-                      event.type === 'container' ? 'primary' :
-                        event.type === 'image' ? 'secondary' :
-                          event.type === 'volume' ? 'success' : 'default'
+                      event.type === 'container'
+                        ? 'primary'
+                        : event.type === 'image'
+                          ? 'secondary'
+                          : event.type === 'volume'
+                            ? 'success'
+                            : 'default'
                     }
                   />
                 </TableCell>
                 <TableCell>{event.action}</TableCell>
-                <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <TableCell
+                  sx={{
+                    maxWidth: 200,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   <Tooltip title={event.actor}>
                     <span>{truncateContainerName(event.actor, 30)}</span>
                   </Tooltip>
@@ -880,7 +943,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 alignItems: 'center',
                 backgroundColor: (theme) => theme.palette.background.default,
                 opacity: 0.5,
-                zIndex: 1
+                zIndex: 1,
               }}
             >
               <CircularProgress />
@@ -894,7 +957,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                 icon={<ViewListIcon fontSize="small" />}
                 title="Containers"
                 count={overview?.containers.total || 0}
-                subtext={overview ? `${overview.containers.running} running, ${overview.containers.stopped} stopped` : undefined}
+                subtext={
+                  overview
+                    ? `${overview.containers.running} running, ${overview.containers.stopped} stopped`
+                    : undefined
+                }
                 color="primary"
               />
             </Grid>
@@ -938,10 +1005,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     titleTypographyProps={{ variant: 'h6' }}
                     sx={{ borderBottom: 1, borderColor: 'divider', p: 2, pb: 0 }}
                   />
-                  <CardContent sx={{ p: 0 }}>
-                    {renderContainerStatsTable()}
-                  </CardContent>
-
+                  <CardContent sx={{ p: 0 }}>{renderContainerStatsTable()}</CardContent>
                 </Card>
               </Grid>
 
@@ -953,9 +1017,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     titleTypographyProps={{ variant: 'h6' }}
                     sx={{ borderBottom: 1, borderColor: 'divider', p: 2 }}
                   />
-                  <CardContent sx={{ p: 0 }}>
-                    {renderSystemResources()}
-                  </CardContent>
+                  <CardContent sx={{ p: 0 }}>{renderSystemResources()}</CardContent>
                 </Card>
               </Grid>
 
@@ -967,9 +1029,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     titleTypographyProps={{ variant: 'h6' }}
                     sx={{ borderBottom: 1, borderColor: 'divider', p: 2 }}
                   />
-                  <CardContent sx={{ p: 0 }}>
-                    {renderEvents()}
-                  </CardContent>
+                  <CardContent sx={{ p: 0 }}>{renderEvents()}</CardContent>
                 </Card>
               </Grid>
             </Grid>
@@ -984,9 +1044,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     titleTypographyProps={{ variant: 'h6' }}
                     sx={{ borderBottom: 1, borderColor: 'divider', p: 2 }}
                   />
-                  <CardContent sx={{ p: 0 }}>
-                    {renderContainerDistribution()}
-                  </CardContent>
+                  <CardContent sx={{ p: 0 }}>{renderContainerDistribution()}</CardContent>
                 </Card>
               </Grid>
 
@@ -998,9 +1056,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     titleTypographyProps={{ variant: 'h6' }}
                     sx={{ borderBottom: 1, borderColor: 'divider', p: 2 }}
                   />
-                  <CardContent sx={{ p: 0 }}>
-                    {renderSystemInfo()}
-                  </CardContent>
+                  <CardContent sx={{ p: 0 }}>{renderSystemInfo()}</CardContent>
                 </Card>
               </Grid>
 
@@ -1012,9 +1068,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Server Time
                       </Typography>
-                      <Typography variant="body1">
-                        {systemInfo.serverTime}
-                      </Typography>
+                      <Typography variant="body1">{systemInfo.serverTime}</Typography>
                     </CardContent>
                   </Card>
                 </Grid>

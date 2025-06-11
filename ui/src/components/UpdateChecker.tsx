@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { createDockerDesktopClient } from '@docker/extension-api-client';
+import {
+  Update as UpdateIcon,
+  CheckCircle as CheckCircleIcon,
+  NewReleases as NewReleasesIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -14,13 +20,7 @@ import {
   DialogContentText,
   Link,
 } from '@mui/material';
-import {
-  Update as UpdateIcon,
-  CheckCircle as CheckCircleIcon,
-  NewReleases as NewReleasesIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
-import { createDockerDesktopClient } from '@docker/extension-api-client';
+import React, { useState, useEffect } from 'react';
 
 const ddClient = createDockerDesktopClient();
 
@@ -46,20 +46,20 @@ const UpdateChecker: React.FC = () => {
   const checkForUpdates = async () => {
     setChecking(true);
     setError(null);
-    
+
     try {
       // Check Docker Hub for latest version
       // Use backend proxy to avoid CORS issues
       const response = await ddClient.extension?.vm?.service?.get('/updates/check');
-      
+
       console.log('Update check response:', response);
-      
+
       // Handle wrapped response
       let data = response;
       if (response && typeof response === 'object' && 'data' in response) {
         data = response.data;
       }
-      
+
       // Parse if string
       if (typeof data === 'string') {
         try {
@@ -68,14 +68,14 @@ const UpdateChecker: React.FC = () => {
           throw new Error('Invalid response format');
         }
       }
-      
+
       // Type assertion after validation
       const dockerHubResponse = data as { results?: any[] };
-      
+
       if (!dockerHubResponse.results || dockerHubResponse.results.length === 0) {
         throw new Error('No versions found');
       }
-      
+
       // Find the latest version tag (exclude 'latest' and commit hashes)
       const versionTags = dockerHubResponse.results
         .filter((tag: any) => tag.name.match(/^\d+\.\d+(\.\d+)?$/))
@@ -83,26 +83,28 @@ const UpdateChecker: React.FC = () => {
           // Sort by version number
           const versionA = a.name.split('.').map((n: string) => parseInt(n, 10));
           const versionB = b.name.split('.').map((n: string) => parseInt(n, 10));
-          
+
           for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
             const numA = versionA[i] || 0;
             const numB = versionB[i] || 0;
-            if (numA !== numB) return numB - numA;
+            if (numA !== numB) {
+              return numB - numA;
+            }
           }
           return 0;
         });
-      
+
       if (versionTags.length === 0) {
         throw new Error('No version tags found');
       }
-      
+
       const latestTag = versionTags[0];
       const latestVersion = latestTag.name;
-      
+
       // Compare versions
-      const currentParts = CURRENT_VERSION.split('.').map(n => parseInt(n, 10));
+      const currentParts = CURRENT_VERSION.split('.').map((n) => parseInt(n, 10));
       const latestParts = latestVersion.split('.').map((n: string) => parseInt(n, 10));
-      
+
       let isNewer = false;
       for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
         const current = currentParts[i] || 0;
@@ -114,7 +116,7 @@ const UpdateChecker: React.FC = () => {
           break;
         }
       }
-      
+
       const info: UpdateInfo = {
         currentVersion: CURRENT_VERSION,
         latestVersion,
@@ -122,14 +124,13 @@ const UpdateChecker: React.FC = () => {
         releaseUrl: `https://hub.docker.com/r/telkombe/remote-docker/tags`,
         publishedAt: latestTag.last_updated,
       };
-      
+
       setUpdateInfo(info);
       setLastChecked(new Date());
-      
+
       if (isNewer) {
         setShowUpdateDialog(true);
       }
-      
     } catch (err) {
       console.error('Failed to check for updates:', err);
       setError('Failed to check for updates. Please try again later.');
@@ -139,29 +140,30 @@ const UpdateChecker: React.FC = () => {
   };
 
   const performUpdate = async () => {
-    if (!updateInfo || !updateInfo.isUpdateAvailable) return;
-    
+    if (!updateInfo || !updateInfo.isUpdateAvailable) {
+      return;
+    }
+
     setUpdating(true);
     setError(null);
-    
+
     try {
       // Use Docker Desktop CLI to update the extension
       const updateCommand = `docker extension update telkombe/remote-docker:${updateInfo.latestVersion}`;
-      
+
       // Show instructions since we can't directly execute the command
       setShowUpdateDialog(false);
-      
+
       // Try to copy command to clipboard
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(updateCommand);
-        ddClient.desktopUI?.toast?.success('Update command copied to clipboard! Run it in your terminal.');
+        ddClient.desktopUI?.toast?.success(
+          'Update command copied to clipboard! Run it in your terminal.',
+        );
       }
-      
+
       // Show update instructions
-      ddClient.desktopUI?.toast?.warning(
-        `To update, run: ${updateCommand}`
-      );
-      
+      ddClient.desktopUI?.toast?.warning(`To update, run: ${updateCommand}`);
     } catch (err) {
       console.error('Failed to update:', err);
       setError('Failed to update. Please update manually using Docker CLI.');
@@ -176,19 +178,31 @@ const UpdateChecker: React.FC = () => {
   }, []);
 
   const formatLastChecked = () => {
-    if (!lastChecked) return '';
+    if (!lastChecked) {
+      return '';
+    }
     const now = new Date();
     const diff = now.getTime() - lastChecked.getTime();
     const minutes = Math.floor(diff / 60000);
-    
-    if (minutes < 1) return 'just now';
-    if (minutes === 1) return '1 minute ago';
-    if (minutes < 60) return `${minutes} minutes ago`;
-    
+
+    if (minutes < 1) {
+      return 'just now';
+    }
+    if (minutes === 1) {
+      return '1 minute ago';
+    }
+    if (minutes < 60) {
+      return `${minutes} minutes ago`;
+    }
+
     const hours = Math.floor(minutes / 60);
-    if (hours === 1) return '1 hour ago';
-    if (hours < 24) return `${hours} hours ago`;
-    
+    if (hours === 1) {
+      return '1 hour ago';
+    }
+    if (hours < 24) {
+      return `${hours} hours ago`;
+    }
+
     return lastChecked.toLocaleDateString();
   };
 
@@ -203,7 +217,7 @@ const UpdateChecker: React.FC = () => {
         >
           Check for Updates
         </Button>
-        
+
         {updateInfo && (
           <>
             <Chip
@@ -212,7 +226,7 @@ const UpdateChecker: React.FC = () => {
               size="small"
               variant="outlined"
             />
-            
+
             {updateInfo.isUpdateAvailable ? (
               <Chip
                 label={`Update available: v${updateInfo.latestVersion}`}
@@ -223,29 +237,24 @@ const UpdateChecker: React.FC = () => {
                 clickable
               />
             ) : (
-              <Chip
-                label="Up to date"
-                color="default"
-                size="small"
-                icon={<CheckCircleIcon />}
-              />
+              <Chip label="Up to date" color="default" size="small" icon={<CheckCircleIcon />} />
             )}
           </>
         )}
-        
+
         {lastChecked && (
           <Typography variant="caption" color="text.secondary">
             Last checked: {formatLastChecked()}
           </Typography>
         )}
       </Stack>
-      
+
       {error && (
         <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
-      
+
       {/* Update Dialog */}
       <Dialog
         open={showUpdateDialog}
@@ -260,10 +269,8 @@ const UpdateChecker: React.FC = () => {
           </Stack>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            A new version of Remote Docker is available!
-          </DialogContentText>
-          
+          <DialogContentText>A new version of Remote Docker is available!</DialogContentText>
+
           <Box sx={{ mt: 2, mb: 2 }}>
             <Stack spacing={1}>
               <Typography variant="body2">
@@ -274,12 +281,13 @@ const UpdateChecker: React.FC = () => {
               </Typography>
               {updateInfo?.publishedAt && (
                 <Typography variant="body2">
-                  <strong>Published:</strong> {new Date(updateInfo.publishedAt).toLocaleDateString()}
+                  <strong>Published:</strong>{' '}
+                  {new Date(updateInfo.publishedAt).toLocaleDateString()}
                 </Typography>
               )}
             </Stack>
           </Box>
-          
+
           <Alert severity="info" sx={{ mt: 2 }}>
             To update the extension, run the following command in your terminal:
             <Box
@@ -298,23 +306,17 @@ const UpdateChecker: React.FC = () => {
               docker extension update telkombe/remote-docker:{updateInfo?.latestVersion}
             </Box>
           </Alert>
-          
+
           {updateInfo?.releaseUrl && (
             <Typography variant="body2" sx={{ mt: 2 }}>
-              <Link
-                href={updateInfo.releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Link href={updateInfo.releaseUrl} target="_blank" rel="noopener noreferrer">
                 View release notes
               </Link>
             </Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowUpdateDialog(false)}>
-            Later
-          </Button>
+          <Button onClick={() => setShowUpdateDialog(false)}>Later</Button>
           <Button
             onClick={performUpdate}
             variant="contained"

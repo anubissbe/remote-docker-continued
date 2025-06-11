@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Box, Typography, Button, Paper } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { Box, Typography, Button, Paper } from '@mui/material';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
@@ -75,12 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </Typography>
               </Box>
             )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.handleReset}
-              sx={{ mt: 3 }}
-            >
+            <Button variant="contained" color="primary" onClick={this.handleReset} sx={{ mt: 3 }}>
               Try Again
             </Button>
           </Paper>
@@ -95,7 +90,7 @@ export class ErrorBoundary extends Component<Props, State> {
 // HOC for wrapping components with error boundary
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  fallback?: ReactNode
+  fallback?: ReactNode,
 ): React.ComponentType<P> {
   return (props: P) => (
     <ErrorBoundary fallback={fallback}>

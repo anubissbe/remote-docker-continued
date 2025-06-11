@@ -1,4 +1,4 @@
-import React from 'react';
+import WarningIcon from '@mui/icons-material/Warning';
 import {
   Dialog,
   DialogTitle,
@@ -7,9 +7,9 @@ import {
   DialogActions,
   Button,
   Typography,
-  Box
+  Box,
 } from '@mui/material';
-import WarningIcon from '@mui/icons-material/Warning';
+import React from 'react';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -24,16 +24,16 @@ interface ConfirmationDialogProps {
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
-                                                                 open,
-                                                                 title,
-                                                                 message,
-                                                                 confirmText = 'Confirm',
-                                                                 cancelText = 'Cancel',
-                                                                 confirmColor = 'primary',
-                                                                 resourceName,
-                                                                 onConfirm,
-                                                                 onCancel
-                                                               }) => {
+  open,
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  confirmColor = 'primary',
+  resourceName,
+  onConfirm,
+  onCancel,
+}) => {
   return (
     <Dialog
       open={open}
@@ -43,8 +43,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       PaperProps={{
         sx: {
           borderRadius: 2,
-          minWidth: '400px'
-        }
+          minWidth: '400px',
+        },
       }}
     >
       <DialogTitle id="confirmation-dialog-title" sx={{ pb: 1 }}>
@@ -56,9 +56,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="confirmation-dialog-description">
-          {message}
-        </DialogContentText>
+        <DialogContentText id="confirmation-dialog-description">{message}</DialogContentText>
         {resourceName && (
           <Typography
             variant="subtitle1"
@@ -68,7 +66,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               p: 1,
               bgcolor: 'action.hover',
               borderRadius: 1,
-              fontFamily: 'monospace'
+              fontFamily: 'monospace',
             }}
           >
             {resourceName}

@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import PortIcon from '@mui/icons-material/Devices';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Alert,
   Box,
@@ -16,18 +21,16 @@ import {
   Tooltip,
   Chip,
   Drawer,
-  Stack, Collapse
+  Stack,
+  Collapse,
 } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import PortIcon from '@mui/icons-material/Devices';
+import React, { useState, useEffect } from 'react';
+
 import { Environment, ExtensionSettings } from '../../App';
 import AutoRefreshControls from '../../components/AutoRefreshControls';
-import ContainerLogs from './ContainerLogs';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
+
+import ContainerLogs from './ContainerLogs';
 
 // Extended Container interface with ports
 export interface DockerContainer {
@@ -52,7 +55,6 @@ export interface ContainersResponse {
   composeGroups: ComposeGroup[];
   ungrouped: DockerContainer[];
 }
-
 
 // Parsed port binding type
 interface PortBinding {
@@ -81,11 +83,11 @@ function useDockerDesktopClient() {
 }
 
 const Containers: React.FC<ContainersProps> = ({
-                                                 activeEnvironment,
-                                                 settings,
-                                                 isLogsOpen,
-                                                 setIsLogsOpen
-                                               }) => {
+  activeEnvironment,
+  settings,
+  isLogsOpen,
+  setIsLogsOpen,
+}) => {
   const [composeGroups, setComposeGroups] = useState<ComposeGroup[]>([]);
   const [ungroupedContainers, setUngroupedContainers] = useState<DockerContainer[]>([]);
 
@@ -159,7 +161,9 @@ const Containers: React.FC<ContainersProps> = ({
 
   // Parse port bindings from Docker format
   const parsePortBindings = (portsString: string | undefined): PortBinding[] => {
-    if (!portsString || portsString.trim() === '') return [];
+    if (!portsString || portsString.trim() === '') {
+      return [];
+    }
 
     // Common Docker port formats:
     // "0.0.0.0:8080->80/tcp, :::8080->80/tcp"
@@ -170,7 +174,7 @@ const Containers: React.FC<ContainersProps> = ({
     try {
       const portMappings = portsString.split(', ');
 
-      portMappings.forEach(mapping => {
+      portMappings.forEach((mapping) => {
         // Check if there's a host port mapping
         if (mapping.includes('->')) {
           // Format: "0.0.0.0:8080->80/tcp" or ":::8080->80/tcp"
@@ -185,7 +189,7 @@ const Containers: React.FC<ContainersProps> = ({
           portBindings.push({
             hostPort,
             containerPort,
-            protocol: protocol || 'tcp'
+            protocol: protocol || 'tcp',
           });
         } else if (mapping.includes('/')) {
           // Format: "80/tcp" (exposed port without host binding)
@@ -194,7 +198,7 @@ const Containers: React.FC<ContainersProps> = ({
           portBindings.push({
             hostPort: '',
             containerPort,
-            protocol: protocol || 'tcp'
+            protocol: protocol || 'tcp',
           });
         }
       });
@@ -272,10 +276,11 @@ const Containers: React.FC<ContainersProps> = ({
     }));
   };
 
-
   // Start a container
   const startContainer = async (containerId: string) => {
-    if (!activeEnvironment) return;
+    if (!activeEnvironment) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
@@ -286,7 +291,7 @@ const Containers: React.FC<ContainersProps> = ({
       const response = await ddClient.extension.vm.service.post('/container/start', {
         hostname: activeEnvironment.hostname,
         username: activeEnvironment.username,
-        containerId
+        containerId,
       });
 
       // Docker Desktop API wraps the response
@@ -311,7 +316,9 @@ const Containers: React.FC<ContainersProps> = ({
 
   // Stop a container
   const stopContainer = async (containerId: string) => {
-    if (!activeEnvironment) return;
+    if (!activeEnvironment) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
@@ -322,7 +329,7 @@ const Containers: React.FC<ContainersProps> = ({
       const response = await ddClient.extension.vm.service.post('/container/stop', {
         hostname: activeEnvironment.hostname,
         username: activeEnvironment.username,
-        containerId
+        containerId,
       });
 
       // Docker Desktop API wraps the response
@@ -381,7 +388,9 @@ const Containers: React.FC<ContainersProps> = ({
 
   // Handle action confirmation
   const handleConfirmAction = () => {
-    if (!confirmAction.container) return;
+    if (!confirmAction.container) {
+      return;
+    }
 
     if (confirmAction.type === 'start') {
       startContainer(confirmAction.container.id);
@@ -396,7 +405,7 @@ const Containers: React.FC<ContainersProps> = ({
   const confirmStartContainer = (container: DockerContainer) => {
     setConfirmAction({
       type: 'start',
-      container: container
+      container: container,
     });
     setConfirmDialogOpen(true);
   };
@@ -405,7 +414,7 @@ const Containers: React.FC<ContainersProps> = ({
   const confirmStopContainer = (container: DockerContainer) => {
     setConfirmAction({
       type: 'stop',
-      container: container
+      container: container,
     });
     setConfirmDialogOpen(true);
   };
@@ -415,7 +424,11 @@ const Containers: React.FC<ContainersProps> = ({
     const portBindings = parsePortBindings(container.ports);
 
     if (portBindings.length === 0) {
-      return <Typography variant="body2" color="text.secondary">None</Typography>;
+      return (
+        <Typography variant="body2" color="text.secondary">
+          None
+        </Typography>
+      );
     }
 
     return (
@@ -455,9 +468,7 @@ const Containers: React.FC<ContainersProps> = ({
           />
         </TableCell>
         <TableCell width="20%">{container.image}</TableCell>
-        <TableCell width="30%">
-          {renderPortBindings(container)}
-        </TableCell>
+        <TableCell width="30%">{renderPortBindings(container)}</TableCell>
         <TableCell width="10%" align="right">
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Tooltip title="View Logs">
@@ -499,7 +510,7 @@ const Containers: React.FC<ContainersProps> = ({
         </TableCell>
       </TableRow>
     );
-  }
+  };
 
   interface ComposeGroupRowProps {
     group: ComposeGroup;
@@ -511,16 +522,12 @@ const Containers: React.FC<ContainersProps> = ({
   // Collapsible Row for Compose Group
   // --------------------------------------------------
   const ComposeGroupRow: React.FC<ComposeGroupRowProps> = ({ group, expanded, onToggle }) => {
-
     return (
       <>
         <TableRow>
           <TableCell width="10%"></TableCell>
           <TableCell width="15%">
-            <IconButton
-              size="small"
-              onClick={() => onToggle(group.name)}
-            >
+            <IconButton size="small" onClick={() => onToggle(group.name)}>
               {expanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
             <strong>{group.name}</strong>
@@ -545,14 +552,12 @@ const Containers: React.FC<ContainersProps> = ({
           </TableCell>
         </TableRow>
 
-        { expanded
-          && group.containers.length > 0
-          && (group.containers.map(container => renderContainerRow(container)))
-        }
+        {expanded &&
+          group.containers.length > 0 &&
+          group.containers.map((container) => renderContainerRow(container))}
       </>
     );
   };
-
 
   // --------------------------------------------------
   // Render
@@ -612,7 +617,7 @@ const Containers: React.FC<ContainersProps> = ({
                 alignItems: 'center',
                 backgroundColor: (theme) => theme.palette.background.default,
                 opacity: 0.5,
-                zIndex: 1
+                zIndex: 1,
               }}
             >
               <CircularProgress />
@@ -628,12 +633,14 @@ const Containers: React.FC<ContainersProps> = ({
                   <TableCell width="15%">Status</TableCell>
                   <TableCell width="20%">Image</TableCell>
                   <TableCell width="30%">Ports</TableCell>
-                  <TableCell width="10%" align="right">Actions</TableCell>
+                  <TableCell width="10%" align="right">
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {/* Compose Groups */}
-                {composeGroups.map(group => (
+                {composeGroups.map((group) => (
                   <ComposeGroupRow
                     key={group.name}
                     group={group}
@@ -643,7 +650,8 @@ const Containers: React.FC<ContainersProps> = ({
                 ))}
 
                 {/* Ungrouped */}
-                {ungroupedContainers.length > 0 && ungroupedContainers.map(container => renderContainerRow(container))}
+                {ungroupedContainers.length > 0 &&
+                  ungroupedContainers.map((container) => renderContainerRow(container))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -678,7 +686,9 @@ const Containers: React.FC<ContainersProps> = ({
               activeEnvironment={activeEnvironment}
               logsType={selectedContainer ? 'container' : 'compose'}
               resourceId={selectedContainer ? selectedContainer.id : selectedComposeProject || ''}
-              resourceName={selectedContainer ? selectedContainer.name : selectedComposeProject || ''}
+              resourceName={
+                selectedContainer ? selectedContainer.name : selectedComposeProject || ''
+              }
               onClose={closeLogs}
             />
           )}

@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Box,
   Paper,
@@ -12,10 +15,8 @@ import {
   TextField,
   Alert,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import React, { useState, useEffect, useRef } from 'react';
+
 import { Environment } from '../../App';
 
 interface ErrorResponse {
@@ -31,8 +32,8 @@ interface ContainerLogsResponse {
 interface ContainerLogsProps {
   activeEnvironment?: Environment;
   logsType: 'container' | 'compose';
-  resourceId: string;    // containerId OR composeProject
-  resourceName: string;  // containerName OR projectName
+  resourceId: string; // containerId OR composeProject
+  resourceName: string; // containerName OR projectName
   onClose: () => void;
 }
 
@@ -70,15 +71,19 @@ function colorizeLog(line: string): string {
     // HTTP methods/statuses
     { regex: /\b(HTTP\/\d\.\d|\bGET\b|\bPOST\b|\bPUT\b|\bDELETE\b)\b/, className: 'log-http' },
     {
-      regex: /\b(200 OK|301 Moved|302 Found|400 Bad Request|403 Forbidden|404 Not Found|500 Internal Server Error)\b/,
-      className: 'log-http-status'
+      regex:
+        /\b(200 OK|301 Moved|302 Found|400 Bad Request|403 Forbidden|404 Not Found|500 Internal Server Error)\b/,
+      className: 'log-http-status',
     },
 
     // NATS
     { regex: /\b(NATS Connected|NATS Disconnected|NATS Error)\b/, className: 'log-nats' },
 
     // Spring Boot / Hibernate
-    { regex: /\b(Spring Boot started|Spring Context Loaded|Hibernate Initialized)\b/, className: 'log-spring' },
+    {
+      regex: /\b(Spring Boot started|Spring Context Loaded|Hibernate Initialized)\b/,
+      className: 'log-spring',
+    },
 
     // Nginx
     { regex: /\b(nginx error|nginx started|nginx stopped)\b/, className: 'log-nginx' },
@@ -97,12 +102,12 @@ function colorizeLog(line: string): string {
 }
 
 const ContainerLogs: React.FC<ContainerLogsProps> = ({
-                                                       activeEnvironment,
-                                                       logsType,
-                                                       resourceId,
-                                                       resourceName,
-                                                       onClose,
-                                                     }) => {
+  activeEnvironment,
+  logsType,
+  resourceId,
+  resourceName,
+  onClose,
+}) => {
   const ddClient = useDockerDesktopClient();
 
   // State
@@ -140,7 +145,9 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
 
   // Check if user scrolled away from bottom to toggle autoScroll
   const handleScroll = () => {
-    if (!logsContainerRef.current) return;
+    if (!logsContainerRef.current) {
+      return;
+    }
     const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
     const atBottom = scrollHeight - scrollTop - clientHeight < 100;
     if (atBottom !== autoScroll) {
@@ -228,9 +235,9 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
 
       // Decide which endpoint to call
       let endpoint = '';
-      let payload: any = {
+      const payload: any = {
         hostname: activeEnvironment.hostname,
-        username: activeEnvironment.username
+        username: activeEnvironment.username,
       };
 
       if (logsType === 'container') {
@@ -275,9 +282,9 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
           .filter((lineObj): lineObj is ComposeLogLine => !!lineObj);
 
         // Now assign colors for any containerName we haven't seen yet
-        setContainerColorMap(oldMap => {
+        setContainerColorMap((oldMap) => {
           const updatedMap = { ...oldMap };
-          parsed.forEach(lineObj => {
+          parsed.forEach((lineObj) => {
             const cname = lineObj.containerName;
             if (cname && !updatedMap[cname]) {
               // pick next color
@@ -325,7 +332,10 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
   // -----------------------------------------
   // Merge for Compose logs by timestamp
   // -----------------------------------------
-  function mergeComposeLogsByTimestamp(oldLines: ComposeLogLine[], newLines: ComposeLogLine[]): ComposeLogLine[] {
+  function mergeComposeLogsByTimestamp(
+    oldLines: ComposeLogLine[],
+    newLines: ComposeLogLine[],
+  ): ComposeLogLine[] {
     // We'll assume oldLines is already sorted by timestamp
     // We only add truly "new" lines that have a timestamp >= the last line's timestamp
     const lastTs = oldLines[oldLines.length - 1].timestamp;
@@ -340,7 +350,10 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
     const idx = line.indexOf('|');
     if (idx !== -1) {
       // everything after the '|'
-      return line.slice(idx + 1).trimStart().trimEnd();
+      return line
+        .slice(idx + 1)
+        .trimStart()
+        .trimEnd();
     }
     return line.trimStart().trimEnd(); // if no '|' found, just return original
   }
@@ -351,11 +364,10 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
   function findIndexOfLastOldInNew(
     oldLast: string,
     newLines: string[],
-    logsType: 'container' | 'compose'
+    logsType: 'container' | 'compose',
   ): number {
     // Normalize oldLast if logsType is compose
-    const oldLastNormalized =
-      logsType === 'compose' ? stripComposePrefix(oldLast) : oldLast;
+    const oldLastNormalized = logsType === 'compose' ? stripComposePrefix(oldLast) : oldLast;
 
     // Scan newLines
     for (let i = 0; i < newLines.length; i++) {
@@ -374,17 +386,18 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
   interface ComposeLogLine {
     containerName: string;
     timestamp: Date;
-    rawLine: string;   // the original line
-    logText: string;   // the part after the timestamp
+    rawLine: string; // the original line
+    logText: string; // the part after the timestamp
   }
-
 
   /**
    * Example parse for a line like:
    *   "service-1  | 2025-02-27T12:34:56.123Z Some log text"
    */
   function parseComposeLine(line: string): ComposeLogLine | null {
-    if (!line.trim()) return null; // empty line
+    if (!line.trim()) {
+      return null;
+    } // empty line
 
     // Split at the first "|" to separate container from the rest
     const idx = line.indexOf('|');
@@ -397,15 +410,17 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
 
     // remainder might be "2025-02-27T12:34:56.123Z Some log text"
     // We'll parse out the timestamp from the log text
-    const match = remainder.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)(?:\s+(.*))?$/);
+    const match = remainder.match(
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)(?:\s+(.*))?$/,
+    );
     if (!match) {
       // If it doesn't match, you might have lines without timestamps
       // or different formatting. We fallback to a "now" timestamp
       throw new Error(`Failed to parse line: ${line}`);
     }
 
-    const timestampStr = match[1];  // e.g. "2025-02-27T12:34:56.123Z"
-    const text = match[3];         // e.g. "Some log text"
+    const timestampStr = match[1]; // e.g. "2025-02-27T12:34:56.123Z"
+    const text = match[3]; // e.g. "Some log text"
 
     return {
       containerName,
@@ -444,38 +459,38 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
     setTempTailLines(e.target.value);
   };
 
-
   // -----------------------------------------
   // Render
   // -----------------------------------------
   // For display, we show either containerLogs or composeLogs
   // We'll convert composeLogs -> rawLine strings if needed
-// For Compose logs, build a "render string" that has the container name colored
-  const finalLinesToRender: string[] = logsType === 'container'
-    ? containerLogs
-    : composeLogs.map((lineObj) => {
-      const cname = lineObj.containerName;
-      const color = containerColorMap[cname] || '#fff';
+  // For Compose logs, build a "render string" that has the container name colored
+  const finalLinesToRender: string[] =
+    logsType === 'container'
+      ? containerLogs
+      : composeLogs.map((lineObj) => {
+          const cname = lineObj.containerName;
+          const color = containerColorMap[cname] || '#fff';
 
-      // We want something like:
-      // "<span style='color: #ce9178'>service-1</span> | 2025-02-27T12:34:56.123Z Some log text"
-      // Then pass that to colorizeLog.
+          // We want something like:
+          // "<span style='color: #ce9178'>service-1</span> | 2025-02-27T12:34:56.123Z Some log text"
+          // Then pass that to colorizeLog.
 
-      // Original lineObj.rawLine might be "service-1 | 2025-02-27T12:34:56.123Z Some log text"
-      // We can remove the original container prefix and re-inject it with color, or we can just
-      // replace the container name portion. Let's reconstruct it for clarity:
+          // Original lineObj.rawLine might be "service-1 | 2025-02-27T12:34:56.123Z Some log text"
+          // We can remove the original container prefix and re-inject it with color, or we can just
+          // replace the container name portion. Let's reconstruct it for clarity:
 
-      const idx = lineObj.rawLine.indexOf('|');
-      if (idx === -1) {
-        // no pipe found, just color the containerName
-        // e.g. if line was just "service-1" with no logs
-        return `<span style="color: ${color}; font-weight: bold;">${cname}</span> ${lineObj.rawLine}`;
-      } else {
-        // everything after '|'
-        const remainder = lineObj.rawLine.slice(idx + 1).trimStart();
-        return `<span style="color: ${color}; font-weight: bold;">${cname}</span> | ${remainder}`;
-      }
-    });
+          const idx = lineObj.rawLine.indexOf('|');
+          if (idx === -1) {
+            // no pipe found, just color the containerName
+            // e.g. if line was just "service-1" with no logs
+            return `<span style="color: ${color}; font-weight: bold;">${cname}</span> ${lineObj.rawLine}`;
+          } else {
+            // everything after '|'
+            const remainder = lineObj.rawLine.slice(idx + 1).trimStart();
+            return `<span style="color: ${color}; font-weight: bold;">${cname}</span> | ${remainder}`;
+          }
+        });
 
   return (
     <Box
@@ -573,8 +588,8 @@ const ContainerLogs: React.FC<ContainerLogsProps> = ({
         sx={{
           flexGrow: 1,
           overflow: 'auto',
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-          color: (theme) => theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#000000' : '#ffffff'),
+          color: (theme) => (theme.palette.mode === 'dark' ? '#ffffff' : '#000000'),
           p: 1,
           fontFamily: 'monospace',
           fontSize: `${logFontSize}rem`,

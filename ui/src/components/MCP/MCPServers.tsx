@@ -1,4 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import {
+  Add as AddIcon,
+  PlayArrow as PlayIcon,
+  Stop as StopIcon,
+  Delete as DeleteIcon,
+  Terminal as TerminalIcon,
+  Storage as StorageIcon,
+  Folder as FolderIcon,
+  Settings as SettingsIcon,
+  Refresh as RefreshIcon,
+} from '@mui/icons-material';
 import {
   Box,
   Card,
@@ -20,18 +30,10 @@ import {
   Tooltip,
   Paper,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  PlayArrow as PlayIcon,
-  Stop as StopIcon,
-  Delete as DeleteIcon,
-  Terminal as TerminalIcon,
-  Storage as StorageIcon,
-  Folder as FolderIcon,
-  Settings as SettingsIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+
 import { ddClient } from '../../utils/ddClient';
+
 import { MCPServer, PredefinedServer } from './types';
 
 interface MCPServersProps {
@@ -53,24 +55,26 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
 
   // Load servers
   const loadServers = async () => {
-    if (!currentEnv) return;
-    
+    if (!currentEnv) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log('Loading MCP servers for environment:', currentEnv);
       const rawResponse = await ddClient.extension?.vm?.service?.get(
-        `/mcp/servers?username=${currentEnv.username}&hostname=${currentEnv.hostname}`
+        `/mcp/servers?username=${currentEnv.username}&hostname=${currentEnv.hostname}`,
       );
       console.log('MCP servers raw response:', rawResponse);
       console.log('Response type:', typeof rawResponse);
       console.log('Response keys:', rawResponse ? Object.keys(rawResponse) : 'null');
-      
+
       // Try different ways to extract the data
       let servers = [];
       const response = rawResponse as any;
-      
+
       if (!response) {
         console.warn('No response from server');
       } else if (typeof response === 'string') {
@@ -96,7 +100,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
         console.log('Found servers in result property:', response.result.servers);
         servers = response.result.servers;
       }
-      
+
       console.log('Final servers array:', servers);
       console.log('Number of servers:', servers.length);
       setServers(servers || []);
@@ -112,21 +116,26 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
   const loadPredefinedServers = async () => {
     try {
       console.log('Loading predefined MCP servers...');
-      
+
       // Check if ddClient is properly initialized
-      if (!ddClient || !ddClient.extension || !ddClient.extension.vm || !ddClient.extension.vm.service) {
+      if (
+        !ddClient ||
+        !ddClient.extension ||
+        !ddClient.extension.vm ||
+        !ddClient.extension.vm.service
+      ) {
         console.error('Docker Desktop client not properly initialized');
         throw new Error('Docker Desktop client not available');
       }
-      
+
       const response = await ddClient.extension.vm.service.get('/mcp/predefined');
       console.log('Predefined servers raw response:', response);
       console.log('Response type:', typeof response);
       console.log('Is array?', Array.isArray(response));
-      
+
       // The Docker Desktop API might return the response in different formats
       let servers = [];
-      
+
       if (response === null || response === undefined) {
         console.warn('Received null/undefined response from API');
         throw new Error('Empty response from API');
@@ -156,7 +165,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
         }
         console.log('Extracted servers from object:', servers);
       }
-      
+
       if (Array.isArray(servers) && servers.length > 0) {
         setPredefinedServers(servers);
         console.log('Successfully set predefined servers:', servers);
@@ -167,7 +176,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
     } catch (err) {
       console.error('Error loading predefined servers:', err);
       console.error('Error details:', err instanceof Error ? err.message : String(err));
-      
+
       // Set some default servers if the API fails
       setPredefinedServers([
         {
@@ -226,29 +235,31 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
 
   // Create a new MCP server
   const handleCreateServer = async () => {
-    if (!currentEnv || !selectedPredefined) return;
-    
+    if (!currentEnv || !selectedPredefined) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const request = {
         name: customName || selectedPredefined.name,
         type: selectedPredefined.type,
         config: selectedPredefined.config,
       };
-      
+
       await ddClient.extension?.vm?.service?.post(
         `/mcp/servers?username=${currentEnv.username}&hostname=${currentEnv.hostname}`,
-        request
+        request,
       );
-      
+
       // Close dialog and reload
       setCreateDialogOpen(false);
       setSelectedPredefined(null);
       setCustomName('');
       loadServers();
-      
+
       ddClient.desktopUI?.toast?.success('MCP server created successfully');
     } catch (err) {
       console.error('Error creating MCP server:', err);
@@ -261,16 +272,18 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
 
   // Start/stop server
   const handleToggleServer = async (server: MCPServer) => {
-    if (!currentEnv) return;
-    
+    if (!currentEnv) {
+      return;
+    }
+
     const action = server.status === 'running' ? 'stop' : 'start';
-    
+
     try {
       await ddClient.extension?.vm?.service?.post(
         `/mcp/servers/${server.id}/${action}?username=${currentEnv.username}&hostname=${currentEnv.hostname}`,
-        {}
+        {},
       );
-      
+
       ddClient.desktopUI?.toast?.success(`MCP server ${action}ed successfully`);
       loadServers();
     } catch (err) {
@@ -281,17 +294,19 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
 
   // Delete server
   const handleDeleteServer = async (server: MCPServer) => {
-    if (!currentEnv) return;
-    
+    if (!currentEnv) {
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete the MCP server "${server.name}"?`)) {
       return;
     }
-    
+
     try {
       await ddClient.extension?.vm?.service?.delete(
-        `/mcp/servers/${server.id}?username=${currentEnv.username}&hostname=${currentEnv.hostname}`
+        `/mcp/servers/${server.id}?username=${currentEnv.username}&hostname=${currentEnv.hostname}`,
       );
-      
+
       ddClient.desktopUI?.toast?.success('MCP server deleted successfully');
       loadServers();
     } catch (err) {
@@ -471,11 +486,7 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
                   Loading available MCP server types...
                 </Typography>
                 <CircularProgress sx={{ mt: 2 }} />
-                <Button 
-                  onClick={loadPredefinedServers} 
-                  sx={{ mt: 2 }}
-                  variant="outlined"
-                >
+                <Button onClick={loadPredefinedServers} sx={{ mt: 2 }} variant="outlined">
                   Retry Loading
                 </Button>
               </Box>
@@ -521,20 +532,10 @@ const MCPServers: React.FC<MCPServersProps> = ({ currentEnv }) => {
           )}
         </DialogContent>
         <DialogActions>
+          {selectedPredefined && <Button onClick={() => setSelectedPredefined(null)}>Back</Button>}
+          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
           {selectedPredefined && (
-            <Button onClick={() => setSelectedPredefined(null)}>
-              Back
-            </Button>
-          )}
-          <Button onClick={() => setCreateDialogOpen(false)}>
-            Cancel
-          </Button>
-          {selectedPredefined && (
-            <Button
-              onClick={handleCreateServer}
-              variant="contained"
-              disabled={loading}
-            >
+            <Button onClick={handleCreateServer} variant="contained" disabled={loading}>
               Create
             </Button>
           )}

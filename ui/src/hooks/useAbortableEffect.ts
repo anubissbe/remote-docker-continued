@@ -6,9 +6,9 @@ import { useEffect, useRef } from 'react';
  */
 export function useAbortableEffect(
   effect: (signal: AbortSignal) => void | (() => void),
-  deps?: React.DependencyList
+  deps?: React.DependencyList,
 ) {
-  const abortControllerRef = useRef<AbortController>();
+  const abortControllerRef = useRef<AbortController>(new AbortController());
 
   useEffect(() => {
     // Create a new AbortController for this effect
@@ -22,7 +22,7 @@ export function useAbortableEffect(
     return () => {
       // Abort any pending operations
       abortControllerRef.current?.abort();
-      
+
       // Run any additional cleanup returned by the effect
       if (typeof cleanup === 'function') {
         cleanup();

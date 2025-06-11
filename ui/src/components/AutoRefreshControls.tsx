@@ -1,13 +1,6 @@
-import React from 'react';
-import {
-  Box,
-  Button,
-  FormControlLabel,
-  Switch,
-  TextField,
-  Typography
-} from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { Box, Button, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
+import React from 'react';
 
 interface AutoRefreshControlsProps {
   autoRefresh: boolean;
@@ -21,15 +14,15 @@ interface AutoRefreshControlsProps {
 }
 
 const AutoRefreshControls: React.FC<AutoRefreshControlsProps> = ({
-                                                                   autoRefresh,
-                                                                   refreshInterval,
-                                                                   lastRefreshTime,
-                                                                   isRefreshing,
-                                                                   isDisabled,
-                                                                   onRefreshClick,
-                                                                   onAutoRefreshChange,
-                                                                   onIntervalChange
-                                                                 }) => {
+  autoRefresh,
+  refreshInterval,
+  lastRefreshTime,
+  isRefreshing,
+  isDisabled,
+  onRefreshClick,
+  onAutoRefreshChange,
+  onIntervalChange,
+}) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
       {lastRefreshTime && (
@@ -57,7 +50,7 @@ const AutoRefreshControls: React.FC<AutoRefreshControlsProps> = ({
         disabled={!autoRefresh || isDisabled}
         size="small"
         InputProps={{
-          inputProps: { min: 5, max: 300 }
+          inputProps: { min: 5, max: 300 },
         }}
         sx={{ width: 150 }}
       />

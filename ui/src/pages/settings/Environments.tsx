@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   Alert,
   Box,
@@ -21,12 +23,11 @@ import {
   Switch,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
+import React, { useState } from 'react';
+
 import { Environment, ExtensionSettings } from '../../App';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import UpdateCheckerSimple from '../../components/UpdateCheckerSimple';
 
 interface EnvironmentsProps {
@@ -36,10 +37,10 @@ interface EnvironmentsProps {
 }
 
 const Environments: React.FC<EnvironmentsProps> = ({
-                                                     settings,
-                                                     onSaveSettings,
-                                                     onSetActiveEnvironment
-                                                   }) => {
+  settings,
+  onSaveSettings,
+  onSetActiveEnvironment,
+}) => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -101,12 +102,12 @@ const Environments: React.FC<EnvironmentsProps> = ({
         id: generateId(),
         name: envName,
         hostname: envHostname,
-        username: envUsername
+        username: envUsername,
       };
 
       const newSettings: ExtensionSettings = {
         ...settings,
-        environments: [...settings.environments, newEnvironment]
+        environments: [...settings.environments, newEnvironment],
       };
 
       console.log('Saving new environment:', newEnvironment);
@@ -139,14 +140,14 @@ const Environments: React.FC<EnvironmentsProps> = ({
         ...currentEnvironment,
         name: envName,
         hostname: envHostname,
-        username: envUsername
+        username: envUsername,
       };
 
       const newSettings: ExtensionSettings = {
         ...settings,
-        environments: settings.environments.map(env =>
-          env.id === currentEnvironment.id ? updatedEnvironment : env
-        )
+        environments: settings.environments.map((env) =>
+          env.id === currentEnvironment.id ? updatedEnvironment : env,
+        ),
       };
 
       console.log('Updating environment:', updatedEnvironment);
@@ -168,16 +169,19 @@ const Environments: React.FC<EnvironmentsProps> = ({
 
   // Delete environment
   const handleDeleteEnvironment = async () => {
-    if (!currentEnvironment) return;
+    if (!currentEnvironment) {
+      return;
+    }
 
     setIsLoading(true);
     try {
       const newSettings: ExtensionSettings = {
         ...settings,
-        environments: settings.environments.filter(env => env.id !== currentEnvironment.id),
-        activeEnvironmentId: settings.activeEnvironmentId === currentEnvironment.id
-          ? undefined
-          : settings.activeEnvironmentId
+        environments: settings.environments.filter((env) => env.id !== currentEnvironment.id),
+        activeEnvironmentId:
+          settings.activeEnvironmentId === currentEnvironment.id
+            ? undefined
+            : settings.activeEnvironmentId,
       };
 
       console.log('Deleting environment:', currentEnvironment.id);
@@ -218,7 +222,7 @@ const Environments: React.FC<EnvironmentsProps> = ({
     try {
       const newSettings: ExtensionSettings = {
         ...settings,
-        autoConnect
+        autoConnect,
       };
 
       console.log('Saving auto-connect setting:', autoConnect);
@@ -264,11 +268,7 @@ const Environments: React.FC<EnvironmentsProps> = ({
             label="Auto-connect with active environment"
           />
 
-          <Button
-            variant="outlined"
-            onClick={handleSaveAutoConnect}
-            disabled={isLoading}
-          >
+          <Button variant="outlined" onClick={handleSaveAutoConnect} disabled={isLoading}>
             Save Settings
           </Button>
         </Stack>
@@ -285,14 +285,8 @@ const Environments: React.FC<EnvironmentsProps> = ({
       {/* Environment List */}
       <Paper sx={{ p: 3 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-          <Typography variant="h6">
-            Your Environments
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={handleOpenAddDialog}
-            disabled={isLoading}
-          >
+          <Typography variant="h6">Your Environments</Typography>
+          <Button variant="outlined" onClick={handleOpenAddDialog} disabled={isLoading}>
             Add Environment
           </Button>
         </Stack>
@@ -305,18 +299,24 @@ const Environments: React.FC<EnvironmentsProps> = ({
           <Grid container spacing={3}>
             {settings.environments.map((env) => (
               <Grid item xs={12} sm={6} md={4} key={env.id}>
-                <Card variant="outlined" sx={{
-                  position: 'relative',
-                  borderColor: settings.activeEnvironmentId === env.id ? 'primary.main' : undefined,
-                  borderWidth: settings.activeEnvironmentId === env.id ? 2 : 1,
-                }}>
+                <Card
+                  variant="outlined"
+                  sx={{
+                    position: 'relative',
+                    borderColor:
+                      settings.activeEnvironmentId === env.id ? 'primary.main' : undefined,
+                    borderWidth: settings.activeEnvironmentId === env.id ? 2 : 1,
+                  }}
+                >
                   {settings.activeEnvironmentId === env.id && (
-                    <Box sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      color: 'primary.main'
-                    }}>
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        color: 'primary.main',
+                      }}
+                    >
                       <Tooltip title="Active Environment">
                         <CheckCircleIcon />
                       </Tooltip>
@@ -393,17 +393,10 @@ const Environments: React.FC<EnvironmentsProps> = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDialogs}
-            variant="outlined"
-            disabled={isLoading}
-          >Cancel
+          <Button onClick={handleCloseDialogs} variant="outlined" disabled={isLoading}>
+            Cancel
           </Button>
-          <Button
-            onClick={handleAddEnvironment}
-            variant="contained"
-            disabled={isLoading}
-          >
+          <Button onClick={handleAddEnvironment} variant="contained" disabled={isLoading}>
             Add
           </Button>
         </DialogActions>
@@ -435,18 +428,10 @@ const Environments: React.FC<EnvironmentsProps> = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDialogs}
-            variant="outlined"
-            disabled={isLoading}
-          >
+          <Button onClick={handleCloseDialogs} variant="outlined" disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            onClick={handleEditEnvironment}
-            variant="contained"
-            disabled={isLoading}
-          >
+          <Button onClick={handleEditEnvironment} variant="contained" disabled={isLoading}>
             Save
           </Button>
         </DialogActions>
@@ -457,16 +442,15 @@ const Environments: React.FC<EnvironmentsProps> = ({
         <DialogTitle>Delete Environment</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the environment "{currentEnvironment?.name}"? This action cannot be undone.
+            Are you sure you want to delete the environment "{currentEnvironment?.name}"? This
+            action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialogs} disabled={isLoading}>Cancel</Button>
-          <Button
-            onClick={handleDeleteEnvironment}
-            color="error"
-            disabled={isLoading}
-          >
+          <Button onClick={handleCloseDialogs} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteEnvironment} color="error" disabled={isLoading}>
             Delete
           </Button>
         </DialogActions>
@@ -482,11 +466,7 @@ const Environments: React.FC<EnvironmentsProps> = ({
 
       {/* Error */}
       {error && (
-        <Snackbar
-          open={!!error}
-          autoHideDuration={4000}
-          onClose={() => setError('')}
-        >
+        <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError('')}>
           <Alert severity="error" onClose={() => setError('')}>
             {error}
           </Alert>

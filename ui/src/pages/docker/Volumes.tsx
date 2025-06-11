@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Alert,
   Box,
@@ -14,9 +14,10 @@ import {
   Typography,
   Tooltip,
   IconButton,
-  Chip
+  Chip,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React, { useState, useEffect } from 'react';
+
 import { Environment, ExtensionSettings } from '../../App';
 import AutoRefreshControls from '../../components/AutoRefreshControls';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
@@ -166,7 +167,9 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
 
   // Delete a volume
   const deleteVolume = async (volumeName: string) => {
-    if (!activeEnvironment) return;
+    if (!activeEnvironment) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
@@ -177,7 +180,7 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
       const response = await ddClient.extension.vm.service.post('/volumes/remove', {
         hostname: activeEnvironment.hostname,
         username: activeEnvironment.username,
-        volumeName
+        volumeName,
       });
 
       // Docker Desktop API wraps the response
@@ -215,10 +218,14 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
 
   // Format volume size if available
   const formatSize = (size: string): string => {
-    if (!size || size === 'N/A') return 'N/A';
+    if (!size || size === 'N/A') {
+      return 'N/A';
+    }
 
     const sizeNum = parseInt(size, 10);
-    if (isNaN(sizeNum)) return size;
+    if (isNaN(sizeNum)) {
+      return size;
+    }
 
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     let i = 0;
@@ -297,7 +304,7 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
                 backgroundColor: (theme) => theme.palette.background.default,
                 opacity: 0.5,
                 zIndex: 1,
-                borderRadius: 1
+                borderRadius: 1,
               }}
             >
               <CircularProgress />
@@ -322,12 +329,14 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
                   <TableRow key={volume.name} hover>
                     <TableCell>{volume.name}</TableCell>
                     <TableCell>{volume.driver}</TableCell>
-                    <TableCell sx={{
-                      maxWidth: 200,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
+                    <TableCell
+                      sx={{
+                        maxWidth: 200,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       <Tooltip title={volume.mountpoint}>
                         <span>{volume.mountpoint}</span>
                       </Tooltip>
@@ -338,16 +347,11 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
                       {volume.labels && volume.labels.length > 0 ? (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {volume.labels.map((label, index) => (
-                            <Chip
-                              key={index}
-                              label={label}
-                              size="small"
-                              variant="outlined"
-                            />
+                            <Chip key={index} label={label} size="small" variant="outlined" />
                           ))}
                         </Box>
                       ) : (
-                        "None"
+                        'None'
                       )}
                     </TableCell>
                     <TableCell align="right">
@@ -369,9 +373,7 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
           </TableContainer>
         </Box>
       ) : !isLoading && activeEnvironment ? (
-        <Alert severity="info">
-          No volumes found in the selected environment.
-        </Alert>
+        <Alert severity="info">No volumes found in the selected environment.</Alert>
       ) : null}
 
       {/* Confirmation Dialog */}
@@ -379,7 +381,7 @@ const Volumes: React.FC<VolumesProps> = ({ activeEnvironment, settings }) => {
         open={confirmDialogOpen}
         title="Delete Volume"
         message={
-          "Are you sure you want to delete this volume? All data stored in this volume will be permanently lost."
+          'Are you sure you want to delete this volume? All data stored in this volume will be permanently lost.'
         }
         confirmText="Delete"
         confirmColor="error"

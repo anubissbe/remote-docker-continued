@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Alert,
   Box,
@@ -14,9 +14,10 @@ import {
   Typography,
   Tooltip,
   IconButton,
-  Chip
+  Chip,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React, { useState, useEffect } from 'react';
+
 import { Environment, ExtensionSettings } from '../../App';
 import AutoRefreshControls from '../../components/AutoRefreshControls';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
@@ -174,7 +175,9 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
 
   // Remove an image
   const removeImage = async (imageId: string) => {
-    if (!activeEnvironment) return;
+    if (!activeEnvironment) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
@@ -186,7 +189,7 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
       const response = await ddClient.extension.vm.service.post('/image/remove', {
         hostname: activeEnvironment.hostname,
         username: activeEnvironment.username,
-        imageId: imageId
+        imageId: imageId,
       });
 
       // Docker Desktop API wraps the response
@@ -226,7 +229,9 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
   // Format byte size to human-readable format
   const formatSize = (bytes: string): string => {
     const size = parseInt(bytes, 10);
-    if (isNaN(size)) return 'Unknown';
+    if (isNaN(size)) {
+      return 'Unknown';
+    }
 
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     let i = 0;
@@ -305,7 +310,7 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
                 backgroundColor: (theme) => theme.palette.background.default,
                 opacity: 0.5,
                 zIndex: 1,
-                borderRadius: 1
+                borderRadius: 1,
               }}
             >
               <CircularProgress />
@@ -321,7 +326,9 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
                   <TableCell width="15%">Image ID</TableCell>
                   <TableCell width="20%">Created</TableCell>
                   <TableCell width="20%">Size</TableCell>
-                  <TableCell width="10%" align="right">Actions</TableCell>
+                  <TableCell width="10%" align="right">
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -329,11 +336,7 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
                   <TableRow key={image.id} hover>
                     <TableCell>{image.repository}</TableCell>
                     <TableCell>
-                      <Chip
-                        label={image.tag || 'latest'}
-                        size="small"
-                        variant="outlined"
-                      />
+                      <Chip label={image.tag || 'latest'} size="small" variant="outlined" />
                     </TableCell>
                     <TableCell sx={{ fontFamily: 'monospace' }}>
                       {image.id.substring(0, 12)}
@@ -359,9 +362,7 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
           </TableContainer>
         </Box>
       ) : !isLoading && activeEnvironment && !error ? (
-        <Alert severity="info">
-          No images found in the selected environment.
-        </Alert>
+        <Alert severity="info">No images found in the selected environment.</Alert>
       ) : null}
 
       {/* Confirmation Dialog */}
@@ -370,12 +371,14 @@ const Images: React.FC<ImagesProps> = ({ activeEnvironment, settings }) => {
         title="Remove Image"
         message={
           selectedImage?.repository === '<none>'
-            ? "Are you sure you want to remove this dangling image?"
-            : "Are you sure you want to remove this image? This will permanently delete the image from the remote host."
+            ? 'Are you sure you want to remove this dangling image?'
+            : 'Are you sure you want to remove this image? This will permanently delete the image from the remote host.'
         }
         confirmText="Remove"
         confirmColor="error"
-        resourceName={selectedImage ? `${selectedImage.repository}:${selectedImage.tag || 'latest'}` : ''}
+        resourceName={
+          selectedImage ? `${selectedImage.repository}:${selectedImage.tag || 'latest'}` : ''
+        }
         onConfirm={handleConfirmRemove}
         onCancel={() => setConfirmDialogOpen(false)}
       />
