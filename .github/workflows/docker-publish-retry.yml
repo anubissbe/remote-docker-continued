@@ -8,7 +8,7 @@ on:
 env:
   IMAGE_NAME: remote-docker
   REGISTRY: docker.io
-  IMAGE_OWNER: telkombe
+  IMAGE_OWNER: anubissbe
 
 jobs:
   build-and-push:

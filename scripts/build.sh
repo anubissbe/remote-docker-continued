@@ -10,7 +10,7 @@ ERROR_COLOR='\033[0;31m'
 NO_COLOR='\033[m'
 
 # Default values
-IMAGE=${IMAGE:-"egekocabas/remote-docker"}
+IMAGE=${IMAGE:-"anubissbe/remote-docker"}
 TAG=${TAG:-"0.1.0"}
 
 echo -e "${INFO_COLOR}Building remote-docker extension...${NO_COLOR}"

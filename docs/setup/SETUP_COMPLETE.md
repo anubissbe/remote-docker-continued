@@ -108,7 +108,7 @@ Or manually configure:
 
 ### 4. Docker Hub Cleanup (Optional)
 Clean up old test tags on Docker Hub:
-- Visit https://hub.docker.com/r/telkombe/remote-docker/tags
+- Visit https://hub.docker.com/r/anubissbe/remote-docker/tags
 - Delete test tags: `debug`, `test`, `debug-test`, `fixed`, `inline-test`, `minimal`, `fixed-path`
 
 ## 📊 Repository Health

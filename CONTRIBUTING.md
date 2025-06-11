@@ -49,7 +49,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 1. **Setup Development Environment**
    ```bash
-   git clone https://github.com/telkombe/remote-docker.git
+   git clone https://github.com/anubissbe/remote-docker.git
    cd remote-docker
    ./scripts/dev-setup.sh
    ```
@@ -69,7 +69,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
    
    # Build and test locally
    ./scripts/build.sh
-   docker extension install telkombe/remote-docker
+   docker extension install anubissbe/remote-docker
    ```
 
 4. **Submit Pull Request**

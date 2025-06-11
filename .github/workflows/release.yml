@@ -59,13 +59,13 @@ jobs:
           ## Installation
           
           ```bash
-          docker extension install telkombe/remote-docker:${{ github.ref_name }}
+          docker extension install anubissbe/remote-docker:${{ github.ref_name }}
           ```
           
           ## Docker Hub
           
-          - **Image**: `telkombe/remote-docker:${{ github.ref_name }}`
-          - **Latest**: `telkombe/remote-docker:latest`
+          - **Image**: `anubissbe/remote-docker:${{ github.ref_name }}`
+          - **Latest**: `anubissbe/remote-docker:latest`
           
           ## Documentation
           
@@ -81,4 +81,4 @@ jobs:
       if: success()
       run: |
         echo "Release ${{ github.ref_name }} created successfully"
-        echo "Docker image should be available at telkombe/remote-docker:${{ github.ref_name }}"
+        echo "Docker image should be available at anubissbe/remote-docker:${{ github.ref_name }}"

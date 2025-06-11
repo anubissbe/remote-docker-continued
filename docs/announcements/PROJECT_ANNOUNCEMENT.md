@@ -20,7 +20,7 @@ We are excited to announce that **Remote Docker** is now **Remote Docker Continu
 
 ### ✅ What Stays the Same
 
-- **Docker Hub**: Still available at `telkombe/remote-docker`
+- **Docker Hub**: Still available at `anubissbe/remote-docker`
 - **Functionality**: All existing features continue to work
 - **Compatibility**: Works with all Docker Desktop versions 4.8.0+
 - **License**: Remains MIT licensed and open source
@@ -59,7 +59,7 @@ Special thanks to [@egekocabas](https://github.com/egekocabas) for creating the 
 - **Repository**: [github.com/anubissbe/remote-docker-continued](https://github.com/anubissbe/remote-docker-continued)
 - **Issues**: [GitHub Issues](https://github.com/anubissbe/remote-docker-continued/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/anubissbe/remote-docker-continued/discussions)
-- **Docker Hub**: [telkombe/remote-docker](https://hub.docker.com/r/telkombe/remote-docker)
+- **Docker Hub**: [anubissbe/remote-docker](https://hub.docker.com/r/anubissbe/remote-docker)
 
 ---
 

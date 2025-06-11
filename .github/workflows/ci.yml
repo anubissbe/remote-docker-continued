@@ -11,7 +11,7 @@ env:
   NODE_VERSION: '20'
   GOLANGCI_LINT_VERSION: 'v1.55.2'
   IMAGE_NAME: remote-docker
-  IMAGE_OWNER: telkombe
+  IMAGE_OWNER: anubissbe
 
 jobs:
   lint:
@@ -258,7 +258,7 @@ jobs:
       packages: write
     env:
       IMAGE_NAME: remote-docker
-      IMAGE_OWNER: telkombe
+      IMAGE_OWNER: anubissbe
     steps:
       - uses: actions/checkout@v4
         with:
@@ -305,10 +305,10 @@ jobs:
         if: steps.check-release.outputs.needed == 'true'
         run: |
           docker load -i /tmp/remote-docker.tar
-          docker tag remote-docker:test telkombe/remote-docker:latest
-          docker tag remote-docker:test telkombe/remote-docker:${{ steps.check-release.outputs.version }}
-          docker push telkombe/remote-docker:latest
-          docker push telkombe/remote-docker:${{ steps.check-release.outputs.version }}
+          docker tag remote-docker:test anubissbe/remote-docker:latest
+          docker tag remote-docker:test anubissbe/remote-docker:${{ steps.check-release.outputs.version }}
+          docker push anubissbe/remote-docker:latest
+          docker push anubissbe/remote-docker:${{ steps.check-release.outputs.version }}
           
       - name: Create Release
         if: steps.check-release.outputs.needed == 'true'

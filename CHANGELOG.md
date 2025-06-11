@@ -157,6 +157,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Links
 
 - [Repository](https://github.com/anubissbe/remote-docker)
-- [Docker Hub](https://hub.docker.com/r/telkombe/remote-docker)
+- [Docker Hub](https://hub.docker.com/r/anubissbe/remote-docker)
 - [Issues](https://github.com/anubissbe/remote-docker/issues)
 - [Security Policy](https://github.com/anubissbe/remote-docker/blob/main/.github/SECURITY.md)

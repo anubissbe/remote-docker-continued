@@ -23,24 +23,24 @@ echo "Building MCP server images..."
 
 # Build filesystem server
 echo "Building filesystem MCP server..."
-docker build -t telkombe/mcp-filesystem:latest ./filesystem/
+docker build -t anubissbe/mcp-filesystem:latest ./filesystem/
 
 # Build docker server
 echo "Building docker MCP server..."
-docker build -t telkombe/mcp-docker:latest ./docker/
+docker build -t anubissbe/mcp-docker:latest ./docker/
 
 # Build shell server
 echo "Building shell MCP server..."
-docker build -t telkombe/mcp-shell:latest ./shell/
+docker build -t anubissbe/mcp-shell:latest ./shell/
 
 echo "MCP server images built successfully!"
 
 # Push to Docker Hub only if not disabled
 if [ "$PUSH_TO_HUB" = true ]; then
   echo "Pushing images to Docker Hub..."
-  docker push telkombe/mcp-filesystem:latest
-  docker push telkombe/mcp-docker:latest
-  docker push telkombe/mcp-shell:latest
+  docker push anubissbe/mcp-filesystem:latest
+  docker push anubissbe/mcp-docker:latest
+  docker push anubissbe/mcp-shell:latest
   echo "MCP server images pushed successfully!"
 else
   echo "Skipping push to Docker Hub (--no-push flag specified)"

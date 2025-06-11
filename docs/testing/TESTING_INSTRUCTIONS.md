@@ -8,17 +8,17 @@
 
 2. **Remove the current extension** (if installed):
    ```bash
-   docker extension rm telkombe/remote-docker
+   docker extension rm anubissbe/remote-docker
    ```
 
 3. **Install the new version**:
    ```bash
-   docker extension install telkombe/remote-docker:v1.0.20
+   docker extension install anubissbe/remote-docker:v1.0.20
    ```
 
    Or if you want the latest version:
    ```bash
-   docker extension install telkombe/remote-docker:latest
+   docker extension install anubissbe/remote-docker:latest
    ```
 
 ## What to Test

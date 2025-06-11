@@ -1,6 +1,6 @@
 # Docker Hub Cleanup Instructions
 
-## Tags to Remove from telkombe/remote-docker
+## Tags to Remove from anubissbe/remote-docker
 
 The following test/debug tags should be removed from Docker Hub to clean up the repository:
 
@@ -21,15 +21,15 @@ The following test/debug tags should be removed from Docker Hub to clean up the 
 
 ## How to Remove Tags
 
-1. Go to https://hub.docker.com/r/telkombe/remote-docker/tags
+1. Go to https://hub.docker.com/r/anubissbe/remote-docker/tags
 2. Login with your Docker Hub account
 3. Click on each test/debug tag listed above
 4. Click "Delete" for each tag
 5. Update `latest` tag to point to `v1.0.9`:
    ```bash
-   docker pull telkombe/remote-docker:v1.0.9
-   docker tag telkombe/remote-docker:v1.0.9 telkombe/remote-docker:latest
-   docker push telkombe/remote-docker:latest
+   docker pull anubissbe/remote-docker:v1.0.9
+   docker tag anubissbe/remote-docker:v1.0.9 anubissbe/remote-docker:latest
+   docker push anubissbe/remote-docker:latest
    ```
 
 ## Recommended Tag Strategy

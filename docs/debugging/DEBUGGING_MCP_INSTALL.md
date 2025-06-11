@@ -7,7 +7,7 @@ I've added visible debugging to the MCP installation dialog since F12 doesn't wo
 
 1. **Update the extension:**
    ```bash
-   docker extension update telkombe/remote-docker:latest
+   docker extension update anubissbe/remote-docker:latest
    ```
 
 2. **Go to MCP Servers → Browse Catalog**

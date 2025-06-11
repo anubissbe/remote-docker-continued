@@ -84,7 +84,7 @@ go fmt ./...          # Format code
 
 ### MCP Server Docker Images
 - Official MCP images: `mcp/filesystem`, `mcp/docker`, `mcp/fetch`, `mcp/everything`
-- Custom images: `telkombe/mcp-filesystem`, `telkombe/mcp-docker`, `telkombe/mcp-shell`
+- Custom images: `anubissbe/mcp-filesystem`, `anubissbe/mcp-docker`, `anubissbe/mcp-shell`
 - Build custom images: `cd mcp-servers && ./build.sh`
 
 ## Key Files to Understand

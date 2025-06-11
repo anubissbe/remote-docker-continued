@@ -13,7 +13,7 @@ const UpdateCheckerSimple: React.FC = () => {
   const CURRENT_VERSION = '1.0.41';
 
   const copyUpdateCommand = async () => {
-    const command = `docker extension update telkombe/remote-docker:latest`;
+    const command = `docker extension update anubissbe/remote-docker:latest`;
 
     try {
       if (navigator.clipboard) {
@@ -46,7 +46,7 @@ const UpdateCheckerSimple: React.FC = () => {
         </Button>
 
         <Link
-          href="https://hub.docker.com/r/telkombe/remote-docker/tags"
+          href="https://hub.docker.com/r/anubissbe/remote-docker/tags"
           target="_blank"
           rel="noopener noreferrer"
           sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
@@ -80,7 +80,7 @@ const UpdateCheckerSimple: React.FC = () => {
               fontFamily: 'monospace',
             }}
           >
-            docker extension update telkombe/remote-docker:latest
+            docker extension update anubissbe/remote-docker:latest
           </Box>
           <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
             Current version: v{CURRENT_VERSION}

@@ -106,7 +106,7 @@ Your **anubissbe/remote-docker** repository is now fully configured with enterpr
 The CI/CD workflows are failing due to missing Docker Hub secrets:
 ```bash
 # Add these secrets to your repository:
-# DOCKERHUB_USERNAME = telkombe
+# DOCKERHUB_USERNAME = anubissbe
 # DOCKERHUB_TOKEN = your_docker_hub_token
 ```
 
@@ -163,4 +163,4 @@ The extension is ready for the Docker community! 🎉
 
 *Last updated: 2025-06-09*  
 *Repository: https://github.com/anubissbe/remote-docker*  
-*Docker Hub: https://hub.docker.com/r/telkombe/remote-docker*
+*Docker Hub: https://hub.docker.com/r/anubissbe/remote-docker*

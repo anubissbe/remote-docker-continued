@@ -80,7 +80,7 @@ async function testUpdateChecker() {
   console.log('=========================\n');
   
   const latestVersion = '1.0.22';
-  const updateCommand = `docker extension update telkombe/remote-docker:${latestVersion}`;
+  const updateCommand = `docker extension update anubissbe/remote-docker:${latestVersion}`;
   console.log('Generated command:', updateCommand);
   
   console.log('\n✅ All tests completed!');

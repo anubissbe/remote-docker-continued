@@ -790,7 +790,7 @@ func getDashboardEvents(ctx echo.Context) error {
 // Check for updates by proxying to Docker Hub API
 func checkForUpdates(ctx echo.Context) error {
 	// Proxy request to Docker Hub to avoid CORS issues
-	resp, err := http.Get("https://hub.docker.com/v2/repositories/telkombe/remote-docker/tags/?page_size=50&ordering=-last_updated")
+	resp, err := http.Get("https://hub.docker.com/v2/repositories/anubissbe/remote-docker/tags/?page_size=50&ordering=-last_updated")
 	if err != nil {
 		logger.Errorf("Failed to check Docker Hub for updates: %v", err)
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
