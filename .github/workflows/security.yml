@@ -97,7 +97,6 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
       continue-on-error: true
-        
     - name: Upload gosec scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       if: always()
