@@ -20,14 +20,20 @@ jobs:
     - name: Generate changelog
       id: changelog
       run: |
+        set -e
         # Get the previous tag
         PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
         
         # Generate changelog
         if [ -n "$PREV_TAG" ]; then
-          CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD | grep -v "Merge pull request")
+          CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD | grep -v "Merge pull request" || true)
         else
-          CHANGELOG=$(git log --pretty=format:"- %s" | grep -v "Merge pull request")
+          CHANGELOG=$(git log --pretty=format:"- %s" | grep -v "Merge pull request" || true)
+        fi
+        
+        # Handle empty changelog
+        if [ -z "$CHANGELOG" ]; then
+          CHANGELOG="- No changes detected"
         fi
         
         # Save changelog to file

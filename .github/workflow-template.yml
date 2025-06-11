@@ -8,7 +8,7 @@
 #
 # Actions:
 #   - checkout: v4
-#   - setup-go: v5
+#   - setup-go: v4
 #   - setup-node: v4
 #   - cache: v4
 #   - upload-artifact: v4

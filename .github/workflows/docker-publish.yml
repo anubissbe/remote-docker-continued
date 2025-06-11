@@ -11,8 +11,8 @@ on:
 env:
   IMAGE_NAME: remote-docker
   IMAGE_OWNER: telkombe
-  GO_VERSION: '1.21'
-  NODE_VERSION: '18'
+  GO_VERSION: '1.22'
+  NODE_VERSION: '20'
 
 jobs:
   build:
@@ -86,7 +86,7 @@ jobs:
 
       - name: Generate SBOM
         if: github.event_name != 'pull_request'
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@v0.17.0
         with:
           image: ${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           format: cyclonedx-json
