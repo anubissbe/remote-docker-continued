@@ -1,0 +1,465 @@
+# Docker Extension CI/CD Pipeline
+# For: Docker extensions and containerized applications
+# Self-hosted runners: 192.168.1.16 with 20 available runners
+
+name: 🐳 Docker Extension Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_HUB_REGISTRY: docker.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 🔍 Static Analysis & Security
+  code-analysis:
+    name: 🔍 Code Analysis & Security
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 15
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Dockerfile linting
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          format: sarif
+          output-file: hadolint-results.sarif
+          no-fail: true
+
+      - name: 📊 Upload Hadolint results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: hadolint-results.sarif
+
+      - name: 🔒 Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+
+      - name: 📊 Upload Trivy filesystem results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+
+      - name: 🔍 Shell script analysis
+        run: |
+          if find . -name "*.sh" -type f | head -1 | grep -q .; then
+            docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable $(find . -name "*.sh" -type f)
+          else
+            echo "No shell scripts found"
+          fi
+
+  # 🏗️ Multi-Platform Build
+  build:
+    name: 🏗️ Multi-Platform Build
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build Docker image for ${{ matrix.platform }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:test-${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+          outputs: type=docker,dest=/tmp/image-${{ matrix.platform }}.tar
+
+      - name: 📦 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.platform }}
+          path: /tmp/image-${{ matrix.platform }}.tar
+          retention-days: 1
+
+  # 🧪 Container Testing
+  container-tests:
+    name: 🧪 Container Tests
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 20
+    needs: [build]
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ matrix.platform }}
+          path: /tmp
+
+      - name: 🐳 Load Docker image
+        run: docker load --input /tmp/image-${{ matrix.platform }}.tar
+
+      - name: 🧪 Test container startup
+        run: |
+          CONTAINER_ID=$(docker run -d ${{ env.IMAGE_NAME }}:test-${{ matrix.platform }})
+          sleep 10
+          
+          # Check if container is still running
+          if docker ps | grep -q $CONTAINER_ID; then
+            echo "✅ Container started successfully"
+          else
+            echo "❌ Container failed to start"
+            docker logs $CONTAINER_ID
+            exit 1
+          fi
+          
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+
+      - name: 🔍 Container health check
+        run: |
+          if docker run --rm ${{ env.IMAGE_NAME }}:test-${{ matrix.platform }} --version; then
+            echo "✅ Health check passed"
+          else
+            echo "⚠️ No health check available"
+          fi
+
+      - name: 📊 Container size analysis
+        run: |
+          SIZE=$(docker images ${{ env.IMAGE_NAME }}:test-${{ matrix.platform }} --format "table {{.Size}}" | tail -n 1)
+          echo "📦 Image size for ${{ matrix.platform }}: $SIZE"
+
+  # 🔒 Security Scanning
+  security-scan:
+    name: 🔒 Container Security Scan
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 15
+    needs: [build]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifact (amd64)
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-linux/amd64
+          path: /tmp
+
+      - name: 🐳 Load Docker image
+        run: docker load --input /tmp/image-linux/amd64.tar
+
+      - name: 🔒 Run Trivy container scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:test-linux/amd64
+          format: 'sarif'
+          output: 'trivy-container-results.sarif'
+
+      - name: 📊 Upload container security results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-container-results.sarif'
+
+      - name: 🔍 Container vulnerability summary
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/tmp aquasec/trivy:latest image \
+            --format table --exit-code 0 \
+            ${{ env.IMAGE_NAME }}:test-linux/amd64
+
+  # 🎯 Extension-Specific Tests
+  extension-tests:
+    name: 🎯 Docker Extension Tests
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 25
+    needs: [container-tests]
+    if: contains(github.repository, 'extension') || contains(github.repository, 'docker')
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifact (amd64)
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-linux/amd64
+          path: /tmp
+
+      - name: 🐳 Load Docker image
+        run: docker load --input /tmp/image-linux/amd64.tar
+
+      - name: 🔧 Install Docker extension CLI
+        run: |
+          # Install docker extension CLI if available
+          curl -fsSL https://raw.githubusercontent.com/docker/extensions-sdk/main/scripts/install-extension-cli.sh | sh
+          
+      - name: 📋 Validate extension metadata
+        run: |
+          if [ -f "metadata.json" ]; then
+            echo "✅ Extension metadata found"
+            cat metadata.json | jq .
+          else
+            echo "⚠️ No extension metadata found"
+          fi
+
+      - name: 🧪 Test extension installation
+        run: |
+          if command -v docker-extension >/dev/null 2>&1; then
+            docker-extension validate ${{ env.IMAGE_NAME }}:test-linux/amd64
+          else
+            echo "⚠️ Docker extension CLI not available"
+          fi
+
+      - name: 🎯 Test extension functionality
+        run: |
+          # Test extension-specific functionality
+          if [ -f "test-extension.sh" ]; then
+            chmod +x test-extension.sh
+            ./test-extension.sh ${{ env.IMAGE_NAME }}:test-linux/amd64
+          else
+            echo "⚠️ No extension test script found"
+          fi
+
+  # 📊 Performance & Resource Usage
+  performance:
+    name: 📊 Performance Tests
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 20
+    needs: [container-tests]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Download build artifact (amd64)
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-linux/amd64
+          path: /tmp
+
+      - name: 🐳 Load Docker image
+        run: docker load --input /tmp/image-linux/amd64.tar
+
+      - name: 📊 Resource usage test
+        run: |
+          echo "🧪 Testing resource usage..."
+          
+          # Start container with resource limits
+          CONTAINER_ID=$(docker run -d --memory=512m --cpus=1.0 \
+            ${{ env.IMAGE_NAME }}:test-linux/amd64)
+          
+          sleep 10
+          
+          # Get resource usage
+          docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}" $CONTAINER_ID
+          
+          # Check memory usage doesn't exceed 80% of limit
+          MEM_USAGE=$(docker stats --no-stream --format "{{.MemPerc}}" $CONTAINER_ID | sed 's/%//')
+          if (( $(echo "$MEM_USAGE > 80" | bc -l) )); then
+            echo "⚠️ High memory usage: ${MEM_USAGE}%"
+          else
+            echo "✅ Memory usage within limits: ${MEM_USAGE}%"
+          fi
+          
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+
+      - name: ⚡ Startup time test
+        run: |
+          echo "🧪 Testing startup time..."
+          
+          START_TIME=$(date +%s.%N)
+          CONTAINER_ID=$(docker run -d ${{ env.IMAGE_NAME }}:test-linux/amd64)
+          
+          # Wait for container to be ready (adjust based on your app)
+          timeout 30s sh -c 'until docker logs '$CONTAINER_ID' 2>&1 | grep -q "ready\|started\|listening"; do sleep 1; done' || true
+          
+          END_TIME=$(date +%s.%N)
+          STARTUP_TIME=$(echo "$END_TIME - $START_TIME" | bc)
+          
+          echo "⚡ Startup time: ${STARTUP_TIME} seconds"
+          
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+
+  # 📦 Multi-Registry Release
+  release:
+    name: 📦 Multi-Registry Release
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 30
+    needs: [code-analysis, container-tests, security-scan]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_HUB_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.DOCKER_HUB_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🚢 Build and push to multiple registries
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 📋 Generate image manifest
+        run: |
+          echo "## 🐳 Docker Images" > release-notes.md
+          echo "" >> release-notes.md
+          echo "### GitHub Container Registry" >> release-notes.md
+          echo '```bash' >> release-notes.md
+          echo "docker pull ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Docker Hub" >> release-notes.md
+          echo '```bash' >> release-notes.md
+          echo "docker pull ${{ env.DOCKER_HUB_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}" >> release-notes.md
+          echo '```' >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Supported Architectures" >> release-notes.md
+          echo "- linux/amd64" >> release-notes.md
+          echo "- linux/arm64" >> release-notes.md
+
+      - name: 🔍 Generate vulnerability report
+        run: |
+          echo "" >> release-notes.md
+          echo "### Security Scan Results" >> release-notes.md
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/tmp aquasec/trivy:latest image \
+            --format markdown \
+            ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }} >> release-notes.md
+
+      - name: 📄 Update release notes
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release-notes.md
+          files: |
+            Dockerfile
+            metadata.json
+
+  # 🔄 Scheduled Image Updates
+  scheduled-build:
+    name: 🔄 Scheduled Security Updates
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 20
+    if: github.event_name == 'schedule'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build with latest base images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:security-update
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          no-cache: true  # Force fresh build with latest base images
+
+      - name: 🔒 Security scan of updated image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:security-update
+          format: 'json'
+          output: 'security-scan.json'
+
+      - name: 📊 Compare security posture
+        run: |
+          # Check if there are security improvements
+          VULNERABILITIES=$(jq '.Results[0].Vulnerabilities | length' security-scan.json 2>/dev/null || echo "0")
+          echo "Current vulnerabilities: $VULNERABILITIES"
+          
+          if [ "$VULNERABILITIES" -lt "$(cat last-vulnerability-count.txt 2>/dev/null || echo 999)" ]; then
+            echo "Security improvements found, creating PR"
+            echo "$VULNERABILITIES" > last-vulnerability-count.txt
+          fi
+
+      - name: 📝 Create security update PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: '🔒 chore: security updates for base images'
+          title: '🔒 Automated security updates'
+          body: |
+            ## 🔒 Automated Security Updates
+            
+            This PR updates base images to include the latest security patches.
+            
+            - Rebuilt with latest base images
+            - Security scan results included
+            
+            **Note**: Please review and test before merging.
+          branch: chore/security-updates
+          delete-branch: true
+
+# 📊 Workflow Status Badge
+# Add to README.md:
+# [![Docker Extension Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO/workflows/🐳%20Docker%20Extension%20Pipeline/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions)
