@@ -57,7 +57,7 @@ jobs:
           npm ci
           
       - name: Run Go linters
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v8
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
           working-directory: backend
